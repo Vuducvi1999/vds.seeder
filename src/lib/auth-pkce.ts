@@ -78,7 +78,7 @@ class PKCEAuthService {
     clearState();
 
     if (!savedState || savedState !== state) {
-      throw new Error('Invalid state parameter');
+      throw new Error('Hacker mặt l đang tấn công CSRF');
     }
 
     if (!codeVerifier) {
