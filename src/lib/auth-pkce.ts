@@ -36,12 +36,20 @@ class PKCEAuthService {
   async login(): Promise<void> {
     const config = this.getConfig();
     if (!config) {
+      console.error('PKCE config not set');
       throw new Error('PKCE config not set');
     }
 
+    console.log('Login config:', config);
+
     const codeVerifier = generateCodeVerifier();
+    console.log('codeVerifier:', codeVerifier);
+    
     const codeChallenge = await generateCodeChallenge(codeVerifier);
+    console.log('codeChallenge:', codeChallenge);
+    
     const state = generateState();
+    console.log('state:', state);
 
     storeCodeVerifier(codeVerifier);
     storeState(state);
@@ -57,6 +65,8 @@ class PKCEAuthService {
     });
 
     const authUrl = `${config.rootUrl}/connect/authorize?${params.toString()}`;
+    console.log('authUrl:', authUrl);
+    
     window.location.href = authUrl;
   }
 

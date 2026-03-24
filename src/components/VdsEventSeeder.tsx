@@ -29,14 +29,10 @@ interface FieldConfig {
 
 export default function VdsEventSeeder() {
   const [count, setCount] = useState(10);
-  const [batchSize, setBatchSize] = useState(10);
   const [configs, setConfigs] = useState<Record<string, boolean>>({});
   const [previewData, setPreviewData] = useState<VDSEventData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [seededCount, setSeededCount] = useState(0);
-  const [totalBatches, setTotalBatches] = useState(0);
-  const [currentBatch, setCurrentBatch] = useState(0);
   const [showSettings, setShowSettings] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{ email?: string; username?: string; name?: string } | null>(null);
@@ -109,7 +105,6 @@ export default function VdsEventSeeder() {
 
     setIsLoading(true);
     setResult(null);
-    setSeededCount(0);
 
     const token = pkceAuthService.getAccessToken();
     if (token) {
@@ -121,50 +116,34 @@ export default function VdsEventSeeder() {
       isAutoGenerate: configs[field.name] || false,
     }));
 
-    const batches = Math.ceil(count / batchSize);
-    setTotalBatches(batches);
-    setCurrentBatch(0);
+    const data = generateBatchData(count, {}, configList);
+    const response = await apiService.seedVdsEventData(data);
 
-    let totalSeeded = 0;
-    const baseData: Partial<VDSEventData> = {};
-
-    for (let i = 0; i < batches; i++) {
-      const batchCount = Math.min(batchSize, count - totalSeeded);
-      const batchData = generateBatchData(batchCount, baseData, configList);
-
-      const response = await apiService.seedVdsEventData(batchData);
-
-      if (!response.success) {
-        if (response.error?.includes('401') || response.error?.includes('Unauthorized')) {
-          const refreshed = await pkceAuthService.refreshAccessToken();
-          if (refreshed) {
-            apiService.setToken(pkceAuthService.getAccessToken() || '');
-            const retryResponse = await apiService.seedVdsEventData(batchData);
-            if (retryResponse.success) {
-              totalSeeded += retryResponse.count;
-              setSeededCount(totalSeeded);
-              setCurrentBatch(i + 1);
-              continue;
-            }
+    if (!response.success) {
+      if (response.error?.includes('401') || response.error?.includes('Unauthorized')) {
+        const refreshed = await pkceAuthService.refreshAccessToken();
+        if (refreshed) {
+          apiService.setToken(pkceAuthService.getAccessToken() || '');
+          const retryResponse = await apiService.seedVdsEventData(data);
+          if (retryResponse.success) {
+            setResult({ success: true, message: `Successfully seeded ${retryResponse.count} records` });
+            setIsLoading(false);
+            return;
           }
-          setResult({ success: false, message: 'Session expired. Please login again.' });
-          setIsAuthenticated(false);
-          setUser(null);
-          handleLogin();
-          setIsLoading(false);
-          return;
         }
-        setResult({ success: false, message: `Batch ${i + 1} failed: ${response.error}` });
+        setResult({ success: false, message: 'Session expired. Please login again.' });
+        setIsAuthenticated(false);
+        setUser(null);
+        handleLogin();
         setIsLoading(false);
         return;
       }
-
-      totalSeeded += response.count;
-      setSeededCount(totalSeeded);
-      setCurrentBatch(i + 1);
+      setResult({ success: false, message: `Failed: ${response.error}` });
+      setIsLoading(false);
+      return;
     }
 
-    setResult({ success: true, message: `Successfully seeded ${totalSeeded} records in ${batches} batches` });
+    setResult({ success: true, message: `Successfully seeded ${response.count} records` });
     setIsLoading(false);
   };
 
@@ -232,17 +211,6 @@ export default function VdsEventSeeder() {
                   min={1}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Batch Size</label>
-                <input
-                  type="number"
-                  value={batchSize}
-                  onChange={(e) => setBatchSize(Math.max(1, parseInt(e.target.value) || 1))}
-                  min={1}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <p className="text-xs text-gray-500 mt-1">Number of records per API call</p>
               </div>
             </div>
 
@@ -312,9 +280,7 @@ export default function VdsEventSeeder() {
               className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {isLoading ? (
-                <span>
-                  Seeding... ({currentBatch}/{totalBatches} batches, {seededCount} records)
-                </span>
+                <span>Seeding...</span>
               ) : !isAuthenticated ? (
                 'Login to Seed Data'
               ) : (
