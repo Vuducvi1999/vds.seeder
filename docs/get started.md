@@ -39,15 +39,7 @@ deviceId phải chọn trong số các vdsDevice có sẵn
   có nút home để back về màn hình chính và có thể chọn resource nào để seed 
   trước tiên chỉ có 1 resource là VDSEventData
 - phải đăng nhập trước mới vào được màn chọn resource cần seed
-- các required field không được phép chọn NULL  
-- các enum field như Event Type và Source Type không hiện số mà hiện text cho dễ đọc (giá trị vẫn là số trong enum)
-- thêm đo lường tốc độ execute api 
-- cho phép UI chọn seed mode  
-  + batch (Number of Records)
-    hiện đang có 
-  + tuần tự 
-    sử dụng 1 api khác (/api/itd/vds/v-dSEvent-data/sequence), không nhận 1 batch như trên mà chỉ nhận 1 record 
-
+- thêm đo lường tốc độ execute seed api 
 
 
 
