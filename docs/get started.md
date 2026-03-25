@@ -13,11 +13,7 @@ deviceId phải chọn trong số các vdsDevice có sẵn
 - nếu không muốn 1 field nào đó fake, có thể nhập manual, apply cho toàn bộ data sẽ seed
 - nếu muốn chi tiết hơn nữa, có thể generate preview và sửa manual từng field của mỗi record 
 
-- màn hình chính hiện tại đang chỉ cho phép seed cho 1 resource VDSEventData
-  tôi cần màn hình chính hiện 1 list các danh sách các resource cần seed 
-  khi cần có thể chọn resource nào để seed và có nút home để back về màn hình chính 
-  trước tiên hãy chỉ là với 1 resource là VDSEventData
-
+- thêm tính năng đo thời gian 
 
 ### problems
 - mỗi khi import pkceAuthService là lại tạo 1 instance mới, cần chuyển sang singleton
@@ -29,7 +25,47 @@ deviceId phải chọn trong số các vdsDevice có sẵn
 
 
 
+- từng batch
+- tuần tự (đạt ngưỡng số lượng thì mới insert db) 
+  + đat ngưỡng thời gian 
+  + hoặc số lượng record 
 
+
+- check ram tiêu tốn ớ khoảng 100_000 record 
+
+
+- màn hình chính hiện tại đang chỉ cho phép seed resource VDSEventData
+  tôi cần màn hình chính hiện 1 list các danh sách các resource cần seed 
+  có nút home để back về màn hình chính và có thể chọn resource nào để seed 
+  trước tiên chỉ có 1 resource là VDSEventData
+- phải đăng nhập trước mới vào được màn chọn resource cần seed
+- các required field không được phép chọn NULL  
+- các enum field như Event Type và Source Type không hiện số mà hiện text cho dễ đọc (giá trị vẫn là số trong enum)
+- thêm đo lường tốc độ execute api 
+- cho phép UI chọn seed mode  
+  + batch (Number of Records)
+    hiện đang có 
+  + tuần tự 
+    sử dụng 1 api khác (/api/itd/vds/v-dSEvent-data/sequence), không nhận 1 batch như trên mà chỉ nhận 1 record 
+
+
+
+
+
+
+
+
+
+
+
+
+### prompts
+```
+màn hình chính hiện tại đang chỉ cho phép seed cho 1 resource VDSEventData
+  tôi cần màn hình chính hiện 1 list các danh sách các resource cần seed 
+  khi cần có thể chọn resource nào để seed và có nút home để back về màn hình chính 
+  trước tiên hãy chỉ là với 1 resource là VDSEventData 
+```
 
 
 

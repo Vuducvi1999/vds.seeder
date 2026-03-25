@@ -59,6 +59,45 @@ class ApiService {
     }
   }
 
+  async seedVdsEventDataSequential(
+    data: VDSEventData[],
+    onProgress?: (current: number, total: number) => void
+  ): Promise<{ success: boolean; count: number; error?: string }> {
+    if (!this.config.baseUrl) {
+      return { success: false, count: 0, error: 'API URL not configured' };
+    }
+
+    let successCount = 0;
+    let lastError = '';
+
+    for (let i = 0; i < data.length; i++) {
+      try {
+        await axios.post(
+          `${this.config.baseUrl}/api/itd/vds/v-dSEvent-data/sequence`,
+          data[i],
+          { headers: this.getHeaders() }
+        );
+        successCount++;
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          if (error.response?.status === 401) {
+            return { success: false, count: successCount, error: 'Unauthorized - Please login again' };
+          }
+          lastError = error.message;
+        } else {
+          lastError = error instanceof Error ? error.message : 'Failed to seed record';
+        }
+      }
+      onProgress?.(i + 1, data.length);
+    }
+
+    if (successCount === 0) {
+      return { success: false, count: 0, error: lastError || 'All records failed' };
+    }
+
+    return { success: true, count: successCount, error: successCount < data.length ? `Partial: ${successCount}/${data.length}` : undefined };
+  }
+
   async testConnection(): Promise<{ success: boolean; message: string }> {
     if (!this.config.baseUrl) {
       return { success: false, message: 'API URL not configured' };
