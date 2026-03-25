@@ -41,23 +41,16 @@ class ApiService {
 
     try {
       const response = await axios.post(
-        `${this.config.baseUrl}/api/services/app/VdsEventData/CreateMultiple`,
+        `${this.config.baseUrl}/api/itd/vds/v-dSEvent-data/list`,
         data,
         { headers: this.getHeaders() }
       );
 
-      if (response.data.success) {
-        return { success: true, count: data.length };
-      }
-
-      return { success: false, count: 0, error: response.data.error?.message || 'Unknown error' };
+      return { success: true, count: data.length };
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
           return { success: false, count: 0, error: 'Unauthorized - Please login again' };
-        }
-        if (error.response?.data?.error?.message) {
-          return { success: false, count: 0, error: error.response.data.error.message };
         }
         return { success: false, count: 0, error: error.message };
       }
@@ -72,7 +65,7 @@ class ApiService {
     }
 
     try {
-      await axios.get(`${this.config.baseUrl}/api/services/app/VdsEventData/GetAll`, {
+      await axios.get(`${this.config.baseUrl}/api/itd/vds/v-dSEvent-data/list`, {
         headers: this.getHeaders(),
         timeout: 5000,
       });
@@ -81,6 +74,9 @@ class ApiService {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
           return { success: true, message: 'Connection successful (requires auth)' };
+        }
+        if (error.response?.status === 405) {
+          return { success: true, message: 'Connection successful' };
         }
       }
       const message = error instanceof Error ? error.message : 'Connection failed';

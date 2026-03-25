@@ -1,5 +1,6 @@
 export interface PKCEConfig {
-  rootUrl: string;
+  authUrl: string;
+  backendApiUrl: string;
   clientId: string;
   redirectUri: string;
   postLogoutRedirectUri?: string;

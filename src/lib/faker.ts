@@ -3,7 +3,7 @@ import { VDSEventType, VDSEventSourceType, VDSEventData } from '@/types/vds-even
 
 export function generateVdsEventData(baseData: Partial<VDSEventData>, config: { fieldName: keyof VDSEventData; isAutoGenerate: boolean }[]): VDSEventData {
   const data: VDSEventData = {
-    eventType: VDSEventType.PPEDetection,
+    eventType: VDSEventType.PpeDetection,
     location: '',
     sourceType: VDSEventSourceType.Camera,
     imagePath: null,
@@ -19,19 +19,23 @@ export function generateVdsEventData(baseData: Partial<VDSEventData>, config: { 
 
     switch (cfg.fieldName) {
       case 'eventType':
-        data.eventType = faker.helpers.arrayElement(Object.values(VDSEventType));
+        data.eventType = faker.helpers.arrayElement(
+          (Object.values(VDSEventType) as (VDSEventType | string)[]).filter((v): v is VDSEventType => typeof v === 'number')
+        );
         break;
       case 'location':
         data.location = faker.location.streetAddress();
         break;
       case 'sourceType':
-        data.sourceType = faker.helpers.arrayElement(Object.values(VDSEventSourceType));
+        data.sourceType = faker.helpers.arrayElement(
+          (Object.values(VDSEventSourceType) as (VDSEventSourceType | string)[]).filter((v): v is VDSEventSourceType => typeof v === 'number')
+        );
         break;
       case 'imagePath':
         data.imagePath = `images/${faker.string.alphanumeric(10)}.jpg`;
         break;
       case 'confidence':
-        data.confidence = faker.number.float({ min: 0.5, max: 1, fractionDigits: 2 });
+        data.confidence = faker.number.float({ min: 0, max: 100, fractionDigits: 2 });
         break;
       case 'deviceId':
         data.deviceId = faker.string.uuid();

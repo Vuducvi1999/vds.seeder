@@ -1,25 +1,28 @@
 export enum VDSEventType {
-  PPEDetection = 'PPEDetection',
-  RestrictedArea = 'RestrictedArea',
-  HazardDetection = 'HazardDetection',
-  VehicleDetection = 'VehicleDetection',
-  PedestrianDetection = 'PedestrianDetection',
-  TrafficViolation = 'TrafficViolation',
-  AnomalyDetection = 'AnomalyDetection',
+  Unknown = 0,
+  PpeDetection = 1,
+  RestrictedArea = 2,
+  AbnormalPresence = 3,
+  IdentityManagement = 4,
+  SafetyMonitoring = 5,
+  HazardDetection = 6,
+  CameraHealth = 7,
+  Tracking = 8,
+  SmartSearch = 9,
 }
 
 export enum VDSEventSourceType {
-  Camera = 'Camera',
-  ThirdParty = 'ThirdParty',
-  Sensor = 'Sensor',
-  Manual = 'Manual',
+  Unknown = 0,
+  Camera = 1,
+  WindowService = 2,
+  ThirdParty = 3,
 }
 
 export interface VDSEventData {
   id?: string;
-  eventType: VDSEventType | '';
+  eventType: VDSEventType;
   location: string;
-  sourceType: VDSEventSourceType | '';
+  sourceType: VDSEventSourceType;
   imagePath: string | null;
   confidence: number | null;
   deviceId: string;

@@ -24,10 +24,15 @@ class PKCEAuthService {
 
   getConfig(): PKCEConfig | null {
     if (this.config) return this.config;
-    
+
     const saved = localStorage.getItem(STORAGE_KEYS.CONFIG);
     if (saved) {
-      this.config = JSON.parse(saved);
+      const config = JSON.parse(saved);
+      // Handle old config without backendApiUrl
+      if (!config.backendApiUrl) {
+        config.backendApiUrl = config.authUrl || config.rootUrl || '';
+      }
+      this.config = config;
       return this.config;
     }
     return null;
@@ -44,10 +49,10 @@ class PKCEAuthService {
 
     const codeVerifier = generateCodeVerifier();
     console.log('codeVerifier:', codeVerifier);
-    
+
     const codeChallenge = await generateCodeChallenge(codeVerifier);
     console.log('codeChallenge:', codeChallenge);
-    
+
     const state = generateState();
     console.log('state:', state);
 
@@ -64,9 +69,9 @@ class PKCEAuthService {
       state,
     });
 
-    const authUrl = `${config.rootUrl}/connect/authorize?${params.toString()}`;
+    const authUrl = `${config.authUrl}/connect/authorize?${params.toString()}`;
     console.log('authUrl:', authUrl);
-    
+
     window.location.href = authUrl;
   }
 
@@ -104,7 +109,7 @@ class PKCEAuthService {
       });
 
       const response = await axios.post<TokenResponse>(
-        `${config.rootUrl}/connect/token`,
+        `${config.authUrl}/connect/token`,
         params,
         {
           headers: {
@@ -145,7 +150,7 @@ class PKCEAuthService {
 
     try {
       const response = await axios.get<UserInfo>(
-        `${config.rootUrl}/connect/userinfo`,
+        `${config.authUrl}/connect/userinfo`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -201,7 +206,7 @@ class PKCEAuthService {
       });
 
       const response = await axios.post<TokenResponse>(
-        `${config.rootUrl}/connect/token`,
+        `${config.authUrl}/connect/token`,
         params,
         {
           headers: {
@@ -228,7 +233,7 @@ class PKCEAuthService {
 
   async silentLogin(): Promise<boolean> {
     const refreshToken = localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
-    
+
     if (!refreshToken) {
       return false;
     }
@@ -292,7 +297,7 @@ class PKCEAuthService {
       params.append('post_logout_redirect_uri', config.postLogoutRedirectUri);
     }
 
-    return `${config.rootUrl}/connect/endsession?${params.toString()}`;
+    return `${config.authUrl}/connect/endsession?${params.toString()}`;
   }
 
   logout(): void {

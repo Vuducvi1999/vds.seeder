@@ -31,14 +31,16 @@ const getDefaultRedirectUri = () => {
 };
 
 const DEFAULT_CONFIG = {
-  rootUrl: 'http://localhost:7001/',
+  authUrl: 'http://localhost:7001/',
+  backendApiUrl: 'http://localhost:7001/',
   clientId: 'SeedingTool',
   redirectUri: getDefaultRedirectUri(),
   scopes: 'MonoTemplate',
 };
 
 export default function Settings({ onClose }: SettingsProps) {
-  const [rootUrl, setRootUrl] = useState(DEFAULT_CONFIG.rootUrl);
+  const [authUrl, setAuthUrl] = useState(DEFAULT_CONFIG.authUrl);
+  const [backendApiUrl, setBackendApiUrl] = useState(DEFAULT_CONFIG.backendApiUrl);
   const [clientId, setClientId] = useState(DEFAULT_CONFIG.clientId);
   const [redirectUri, setRedirectUri] = useState(DEFAULT_CONFIG.redirectUri);
   const [scopes, setScopes] = useState(DEFAULT_CONFIG.scopes);
@@ -48,7 +50,8 @@ export default function Settings({ onClose }: SettingsProps) {
   useEffect(() => {
     const config = pkceAuthService.getConfig();
     if (config) {
-      setRootUrl(config.rootUrl);
+      setAuthUrl(config.authUrl);
+      setBackendApiUrl(config.backendApiUrl);
       setClientId(config.clientId);
       setRedirectUri(config.redirectUri);
       setScopes(config.scopes);
@@ -60,7 +63,8 @@ export default function Settings({ onClose }: SettingsProps) {
     currentScopes.unshift('openid', 'offline_access');
 
     const config: PKCEConfig = {
-      rootUrl: rootUrl.replace(/\/$/, ''),
+      authUrl: authUrl.replace(/\/$/, ''),
+      backendApiUrl: backendApiUrl.replace(/\/$/, ''),
       clientId,
       redirectUri,
       scopes: [...new Set(currentScopes)].join(' '),
@@ -71,17 +75,17 @@ export default function Settings({ onClose }: SettingsProps) {
   };
 
   const handleTestConnection = async () => {
-    if (!rootUrl) return;
+    if (!authUrl) return;
 
     setIsTesting(true);
     setTestResult(null);
 
     try {
-      const discoveryUrl = `${rootUrl.replace(/\/$/, '')}/.well-known/openid-configuration`;
+      const discoveryUrl = `${authUrl.replace(/\/$/, '')}/.well-known/openid-configuration`;
       const response = await fetch(discoveryUrl, { method: 'GET' });
 
       if (response.ok) {
-        setTestResult({ success: true, message: 'OpenIddict connection successful' });
+        setTestResult({ success: true, message: 'Connection successful' });
       } else {
         setTestResult({ success: false, message: `Server returned ${response.status}` });
       }
@@ -93,119 +97,177 @@ export default function Settings({ onClose }: SettingsProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Settings</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden border border-slate-700">
+        {/* Header */}
+        <div className="p-6 border-b border-slate-700">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-white">Settings</h2>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 rounded-xl bg-slate-700/50 text-slate-400 hover:text-white hover:bg-slate-700 transition-all"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <div className="space-y-4">
+        {/* Body */}
+        <div className="p-6 space-y-5 overflow-y-auto max-h-[60vh]">
+          {/* Auth Server URL */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Server Root URL <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Auth Server URL <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
-              value={rootUrl}
-              onChange={(e) => setRootUrl(e.target.value)}
-              placeholder="https://api.example.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={authUrl}
+              onChange={(e) => setAuthUrl(e.target.value)}
+              placeholder="https://auth.example.com"
+              className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
-            <p className="text-xs text-gray-500 mt-1">OpenIddict server URL</p>
           </div>
 
+          {/* Backend API URL */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Client ID <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Backend API URL <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={backendApiUrl}
+              onChange={(e) => setBackendApiUrl(e.target.value)}
+              placeholder="https://api.example.com"
+              className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            />
+          </div>
+
+          {/* Client ID */}
+          <div>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Client ID <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="SeedingTool"
+              className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
-            <p className="text-xs text-gray-500 mt-1">OAuth 2.0 Client ID registered in OpenIddict</p>
           </div>
 
+          {/* Redirect URI */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Redirect URI <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Redirect URI <span className="text-red-400">*</span>
             </label>
             <input
               type="text"
               value={redirectUri}
               onChange={(e) => setRedirectUri(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
             />
-            <p className="text-xs text-gray-500 mt-1">Must match the redirect URI registered in OpenIddict</p>
           </div>
 
+          {/* Scopes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Scopes <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Scopes <span className="text-red-400">*</span>
             </label>
-            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto border border-gray-200 rounded-md p-2">
-              {AVAILABLE_SCOPES.map((scope) => (
-                <label
-                  key={scope.value}
-                  className="flex items-start gap-2 p-2 rounded hover:bg-gray-50 cursor-pointer"
-                >
-                  <input
-                    type="checkbox"
-                    checked={scopes.split(' ').includes(scope.value)}
-                    onChange={(e) => {
-                      const currentScopes = scopes.split(' ').filter(s => s);
-                      if (e.target.checked) {
-                        setScopes([...currentScopes, scope.value].join(' '));
-                      } else {
-                        setScopes(currentScopes.filter(s => s !== scope.value).join(' '));
-                      }
-                    }}
-                    className="w-4 h-4 mt-0.5 text-blue-600 rounded focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-gray-700">{scope.label}</span>
-                </label>
-              ))}
+            <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto bg-slate-900 border border-slate-600 rounded-xl p-3">
+              {AVAILABLE_SCOPES.map((scope) => {
+                const isSelected = scopes.split(' ').includes(scope.value);
+                return (
+                  <label
+                    key={scope.value}
+                    className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all ${
+                      isSelected ? 'bg-blue-500/10 border border-blue-500/30' : 'hover:bg-slate-800 border border-transparent'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(e) => {
+                        const currentScopes = scopes.split(' ').filter(s => s);
+                        if (e.target.checked) {
+                          setScopes([...currentScopes, scope.value].join(' '));
+                        } else {
+                          setScopes(currentScopes.filter(s => s !== scope.value).join(' '));
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-slate-600 text-blue-500 focus:ring-blue-500 focus:ring-offset-slate-900 bg-slate-800"
+                    />
+                    <span className={`text-sm ${isSelected ? 'text-blue-300' : 'text-slate-400'}`}>{scope.label}</span>
+                  </label>
+                );
+              })}
             </div>
           </div>
 
-          <div className="pt-2 border-t">
+          {/* Test Connection */}
+          <div>
             <button
               onClick={handleTestConnection}
-              disabled={!rootUrl || isTesting}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+              disabled={!authUrl || isTesting}
+              className="flex items-center gap-2 px-4 py-2.5 bg-slate-700 text-slate-300 rounded-xl hover:bg-slate-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isTesting ? 'Testing...' : 'Test Connection'}
+              {isTesting ? (
+                <>
+                  <div className="w-4 h-4 rounded-full border-2 border-slate-500 border-t-white animate-spin"></div>
+                  Testing...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  Test Connection
+                </>
+              )}
             </button>
             {testResult && (
-              <span className={`ml-4 ${testResult.success ? 'text-green-600' : 'text-red-600'}`}>
+              <div className={`mt-2 flex items-center gap-2 text-sm ${
+                testResult.success ? 'text-emerald-400' : 'text-red-400'
+              }`}>
+                {testResult.success ? (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                )}
                 {testResult.message}
-              </span>
+              </div>
             )}
           </div>
         </div>
 
-        <div className="flex gap-3 pt-6 mt-6 border-t">
+        {/* Footer */}
+        <div className="p-6 border-t border-slate-700 flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition"
+            className="flex-1 px-4 py-3 bg-slate-700 text-slate-300 rounded-xl hover:bg-slate-600 transition-all font-medium"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            disabled={!rootUrl || !clientId || !redirectUri}
-            className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+            disabled={!authUrl || !backendApiUrl || !clientId || !redirectUri}
+            className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20"
           >
-            Save
+            Save Settings
           </button>
         </div>
       </div>
