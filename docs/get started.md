@@ -4,7 +4,7 @@
 
 ### quy tắc generate 
 Confidence nằm trong khoảng 0-100
-
+deviceId phải chọn trong số các vdsDevice có sẵn
 
 
 ### tính năng 
