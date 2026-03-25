@@ -13,8 +13,9 @@ deviceId phải chọn trong số các vdsDevice có sẵn
 - nếu không muốn 1 field nào đó fake, có thể nhập manual, apply cho toàn bộ data sẽ seed
 - nếu muốn chi tiết hơn nữa, có thể generate preview và sửa manual từng field của mỗi record 
 
-- màn hình chính hiện tại đang chỉ cho phép seed cho 1 resource 
+- màn hình chính hiện tại đang chỉ cho phép seed cho 1 resource VDSEventData
   tôi cần màn hình chính hiện 1 list các danh sách các resource cần seed 
+  khi cần có thể chọn resource nào để seed và có nút home để back về màn hình chính 
   trước tiên hãy chỉ là với 1 resource là VDSEventData
 
 

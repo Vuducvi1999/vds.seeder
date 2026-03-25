@@ -192,6 +192,8 @@ export default function VdsEventSeeder() {
     }
 
     setResult({ success: true, message: `Successfully seeded ${response.count} records` });
+    setPreviewData([]);
+    setEditMode(false);
     setIsLoading(false);
   };
 
@@ -519,82 +521,52 @@ export default function VdsEventSeeder() {
             </div>
           )}
 
-          {/* Seed Buttons */}
+          {/* Seed Button */}
           <div className="sticky bottom-6">
             <div className="bg-slate-800/90 backdrop-blur-sm rounded-2xl border border-slate-700/50 p-4 shadow-2xl">
-              <div className="flex gap-3">
-                <button
-                  onClick={handleSeedDirect}
-                  disabled={isLoading}
-                  className={`flex-1 py-4 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 ${isLoading
+              <button
+                onClick={handleSeedDirect}
+                disabled={isLoading}
+                className={`w-full py-4 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 ${
+                  isLoading
                     ? 'bg-slate-600 cursor-wait'
                     : !pkceAuthService.getConfig()
                       ? 'bg-slate-600 cursor-not-allowed'
                       : !isAuthenticated
                         ? 'bg-blue-500 hover:bg-blue-600 shadow-lg shadow-blue-500/30'
                         : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 shadow-lg shadow-emerald-500/30'
-                    } text-white`}
-                >
-                  {isLoading ? (
-                    <>
-                      <div className="w-5 h-5 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>
-                      Seeding...
-                    </>
-                  ) : !pkceAuthService.getConfig() ? (
-                    'Configure API in Settings'
-                  ) : !isAuthenticated ? (
-                    <>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                      </svg>
-                      Login to Seed Data
-                    </>
-                  ) : (
-                    <>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                      </svg>
-                      Seed {count} Records
-                    </>
-                  )}
-                </button>
-
-                <button
-                  onClick={generatePreview}
-                  disabled={isLoading || !pkceAuthService.getConfig() || !isAuthenticated}
-                  className={`px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center gap-3 ${
-                    isLoading || !pkceAuthService.getConfig() || !isAuthenticated
-                      ? 'bg-slate-600 cursor-not-allowed text-slate-400'
-                      : 'bg-slate-700 hover:bg-slate-600 text-white'
-                  }`}
-                  title="Generate preview to edit manually"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
-                  Preview
-                </button>
-              </div>
-
-              {editMode && previewData.length > 0 && (
-                <button
-                  onClick={() => handleSeed()}
-                  disabled={isLoading}
-                  className="mt-3 w-full py-3 rounded-xl font-semibold bg-blue-500 hover:bg-blue-600 text-white transition-all duration-200 flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                  </svg>
-                  Seed Preview Data ({previewData.length} records)
-                </button>
-              )}
+                } text-white`}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-5 h-5 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>
+                    Seeding...
+                  </>
+                ) : !pkceAuthService.getConfig() ? (
+                  'Configure API in Settings'
+                ) : !isAuthenticated ? (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                    </svg>
+                    Login to Seed Data
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                    </svg>
+                    Seed {count} Records
+                  </>
+                )}
+              </button>
 
               {result && (
-                <div className={`mt-3 p-4 rounded-xl flex items-center gap-3 ${result.success
-                  ? 'bg-emerald-500/10 border border-emerald-500/30'
-                  : 'bg-red-500/10 border border-red-500/30'
-                  }`}>
+                <div className={`mt-3 p-4 rounded-xl flex items-center gap-3 ${
+                  result.success
+                    ? 'bg-emerald-500/10 border border-emerald-500/30'
+                    : 'bg-red-500/10 border border-red-500/30'
+                }`}>
                   {result.success ? (
                     <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
