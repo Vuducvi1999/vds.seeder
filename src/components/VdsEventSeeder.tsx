@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import * as Progress from '@radix-ui/react-progress';
 import { VDSEventType, VDSEventSourceType, VDSEventData } from '@/types/vds-event';
 import { apiService } from '@/lib/api';
 import { pkceAuthService } from '@/lib/auth-pkce';
@@ -120,15 +121,6 @@ export default function VdsEventSeeder() {
     }
   }, []);
 
-  useEffect(() => {
-    if (result) {
-      const timer = setTimeout(() => {
-        setResult(null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [result]);
-
   const handleLogin = () => {
     const config = pkceAuthService.getConfig();
     if (!config) {
@@ -216,12 +208,11 @@ export default function VdsEventSeeder() {
 
     const data = dataToSeed || previewData;
     if (!data || data.length === 0) {
-      showResult(false, 'No data to seed', false);
+      showResult(false, 'No data to seed');
       return;
     }
 
     setIsLoading(true);
-    setResult(null);
     setProgress(seedMode === 'sequential' ? { current: 0, total: data.length } : null);
 
     const token = pkceAuthService.getAccessToken();
@@ -255,7 +246,7 @@ export default function VdsEventSeeder() {
             return;
           }
         }
-        showResult(false, 'Session expired. Please login again.', false);
+        showResult(false, 'Session expired. Please login again.');
         setIsAuthenticated(false);
         setUser(null);
         handleLogin();
@@ -263,7 +254,7 @@ export default function VdsEventSeeder() {
         setProgress(null);
         return;
       }
-      showResult(false, `Failed: ${response.error}`, false);
+      showResult(false, `Failed: ${response.error}`);
       setIsLoading(false);
       setProgress(null);
       return;
@@ -692,28 +683,33 @@ export default function VdsEventSeeder() {
               </button>
 
               {result && (
-                <div className={`mt-2 p-2 rounded-lg flex items-center gap-2 text-sm ${
+                <div className={`mt-2 rounded-lg text-sm ${
                   result.success
                     ? 'bg-emerald-500/10 border border-emerald-500/30'
                     : 'bg-red-500/10 border border-red-500/30'
                 }`}>
-                  {result.success ? (
-                    <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <svg className="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  )}
-                  <span className={`flex-1 ${result.success ? 'text-emerald-300' : 'text-red-300'}`}>{result.message}</span>
+                  <div className="p-2 flex items-center gap-2">
+                    {result.success ? (
+                      <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    )}
+                    <span className={`flex-1 ${result.success ? 'text-emerald-300' : 'text-red-300'}`}>{result.message}</span>
+                  </div>
                   {resultTimer && (
-                    <div className="w-16 h-1 bg-slate-700 rounded-full overflow-hidden flex-shrink-0">
-                      <div 
+                    <Progress.Root 
+                      className="relative overflow-hidden bg-slate-700 h-1"
+                      value={progressPercent}
+                    >
+                      <Progress.Indicator 
                         className={`h-full ${result.success ? 'bg-emerald-400' : 'bg-red-400'}`}
-                        style={{ width: `${progressPercent}%` }}
+                        style={{ width: `${progressPercent}%`, transition: 'width 50ms linear' }}
                       />
-                    </div>
+                    </Progress.Root>
                   )}
                 </div>
               )}
