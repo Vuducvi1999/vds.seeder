@@ -222,6 +222,7 @@ export default function VdsEventSeeder() {
 
     setIsLoading(true);
     setProgress(seedMode === 'sequential' ? { current: 0, total: data.length } : null);
+    const startTime = Date.now();
 
     const token = pkceAuthService.getAccessToken();
     if (token) {
@@ -233,6 +234,12 @@ export default function VdsEventSeeder() {
           setProgress({ current, total });
         })
       : await apiService.seedVdsEventData(data);
+
+    const duration = Date.now() - startTime;
+    const formatDuration = (ms: number) => {
+      if (ms < 1000) return `${ms}ms`;
+      return `${(ms / 1000).toFixed(2)}s`;
+    };
 
     if (!response.success) {
       if (response.error?.includes('401') || response.error?.includes('Unauthorized')) {
@@ -246,8 +253,8 @@ export default function VdsEventSeeder() {
             : await apiService.seedVdsEventData(data);
           if (retryResponse.success) {
             const message = retryResponse.error 
-              ? `Seeded ${retryResponse.count}/${data.length} records (${retryResponse.error})`
-              : `Successfully seeded ${retryResponse.count} records`;
+              ? `Seeded ${retryResponse.count}/${data.length} records in ${formatDuration(duration)} (${retryResponse.error})`
+              : `Successfully seeded ${retryResponse.count} records in ${formatDuration(duration)}`;
             showResult(true, message);
             setIsLoading(false);
             setProgress(null);
@@ -269,8 +276,8 @@ export default function VdsEventSeeder() {
     }
 
     const message = response.error 
-      ? `Seeded ${response.count}/${data.length} records (${response.error})`
-      : `Successfully seeded ${response.count} records`;
+      ? `Seeded ${response.count}/${data.length} records in ${formatDuration(duration)} (${response.error})`
+      : `Successfully seeded ${response.count} records in ${formatDuration(duration)}`;
     showResult(true, message);
     setPreviewData([]);
     setEditMode(false);
