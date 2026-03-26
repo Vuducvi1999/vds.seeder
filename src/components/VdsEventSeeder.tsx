@@ -68,6 +68,33 @@ export default function VdsEventSeeder() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{ email?: string; username?: string; name?: string } | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [resultTimer, setResultTimer] = useState<{ start: number; duration: number } | null>(null);
+  const [progressPercent, setProgressPercent] = useState(100);
+
+  useEffect(() => {
+    if (resultTimer) {
+      setProgressPercent(100);
+      const interval = setInterval(() => {
+        const elapsed = Date.now() - resultTimer.start;
+        const remaining = Math.max(0, resultTimer.duration - elapsed);
+        setProgressPercent((remaining / resultTimer.duration) * 100);
+        
+        if (elapsed >= resultTimer.duration) {
+          setResult(null);
+          setResultTimer(null);
+          setProgressPercent(100);
+        }
+      }, 50);
+      return () => clearInterval(interval);
+    }
+  }, [resultTimer]);
+
+  const showResult = (success: boolean, message: string, autoDismiss = true) => {
+    setResult({ success, message });
+    if (autoDismiss) {
+      setResultTimer({ start: Date.now(), duration: 3000 });
+    }
+  };
 
   useEffect(() => {
     const config = pkceAuthService.getConfig();
@@ -189,7 +216,7 @@ export default function VdsEventSeeder() {
 
     const data = dataToSeed || previewData;
     if (!data || data.length === 0) {
-      setResult({ success: false, message: 'No data to seed' });
+      showResult(false, 'No data to seed', false);
       return;
     }
 
@@ -222,13 +249,13 @@ export default function VdsEventSeeder() {
             const message = retryResponse.error 
               ? `Seeded ${retryResponse.count}/${data.length} records (${retryResponse.error})`
               : `Successfully seeded ${retryResponse.count} records`;
-            setResult({ success: true, message });
+            showResult(true, message);
             setIsLoading(false);
             setProgress(null);
             return;
           }
         }
-        setResult({ success: false, message: 'Session expired. Please login again.' });
+        showResult(false, 'Session expired. Please login again.', false);
         setIsAuthenticated(false);
         setUser(null);
         handleLogin();
@@ -236,7 +263,7 @@ export default function VdsEventSeeder() {
         setProgress(null);
         return;
       }
-      setResult({ success: false, message: `Failed: ${response.error}` });
+      showResult(false, `Failed: ${response.error}`, false);
       setIsLoading(false);
       setProgress(null);
       return;
@@ -245,7 +272,7 @@ export default function VdsEventSeeder() {
     const message = response.error 
       ? `Seeded ${response.count}/${data.length} records (${response.error})`
       : `Successfully seeded ${response.count} records`;
-    setResult({ success: true, message });
+    showResult(true, message);
     setPreviewData([]);
     setEditMode(false);
     setIsLoading(false);
@@ -671,15 +698,23 @@ export default function VdsEventSeeder() {
                     : 'bg-red-500/10 border border-red-500/30'
                 }`}>
                   {result.success ? (
-                    <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   ) : (
-                    <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   )}
-                  <span className={result.success ? 'text-emerald-300' : 'text-red-300'}>{result.message}</span>
+                  <span className={`flex-1 ${result.success ? 'text-emerald-300' : 'text-red-300'}`}>{result.message}</span>
+                  {resultTimer && (
+                    <div className="w-16 h-1 bg-slate-700 rounded-full overflow-hidden flex-shrink-0">
+                      <div 
+                        className={`h-full ${result.success ? 'bg-emerald-400' : 'bg-red-400'}`}
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
