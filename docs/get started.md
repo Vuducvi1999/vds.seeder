@@ -35,6 +35,8 @@ deviceId phải chọn trong số các vdsDevice có sẵn
 
 ### requested by sếp
 
+---------
+
 nhận imagedang base64 trong VdseentDTO 
 lấy hình ddaayyr qua seerrice imageResource, lưu image 
 2 thg giao tiếp vơi nhau 
@@ -51,6 +53,18 @@ lấy hình ddaayyr qua seerrice imageResource, lưu image
 -> nếu ảnh năng quá thì test tuần tự thôi 
 -> giả lập thông tin thời gian trên watermark trên ảnh ảo của seeding 
 
+---------
+
+sửa DTO eventData nhạn vào zoneCode
+trong appservice từ zoneCode suy ra NodeId nào
+
+thêm DTO eventData nhận vào SourceReferenceId (con VDS nào phát sự kiện này)
+
+sửa CreationTime chính xác lúc insert vào database
+(cần kiểm tra lại lúc bufferService trigger thì CreationTime có chinh xac không)
+
+---------
+
 
 
 ### pending improvement
@@ -62,10 +76,14 @@ lấy hình ddaayyr qua seerrice imageResource, lưu image
 - phải đăng nhập trước mới vào được màn chọn resource cần seed
 - thêm đo lường tốc độ execute seed api 
 
-thêm vaopf dictinoary
-đếm timeout
-đến sl item trong dictionary
-thỏa mãn thì insert database 
+
+
+
+
+
+
+
+
 
 
 ### prompts

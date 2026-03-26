@@ -97,7 +97,7 @@ export default function VdsEventSeeder() {
     }
   };
 
-  useEffect(() => {
+  const loadConfig = () => {
     const config = pkceAuthService.getConfig();
     const authState = pkceAuthService.getAuthState();
 
@@ -108,18 +108,26 @@ export default function VdsEventSeeder() {
       apiService.setConfig({ baseUrl: config.backendApiUrl });
     }
 
+    if (authState.isAuthenticated && config) {
+      pkceAuthService.init();
+    }
+  };
+
+  useEffect(() => {
     const initialSettings: Record<string, FieldSetting> = {};
     VDS_EVENT_FIELDS.forEach((field) => {
       initialSettings[field.name] = { mode: 'auto', manualValue: '' };
     });
     setFieldSettings(initialSettings);
-
     setIsInitialized(true);
-
-    if (authState.isAuthenticated && config) {
-      pkceAuthService.init();
-    }
+    loadConfig();
   }, []);
+
+  useEffect(() => {
+    if (!showSettings) {
+      loadConfig();
+    }
+  }, [showSettings]);
 
   const handleLogin = () => {
     const config = pkceAuthService.getConfig();
