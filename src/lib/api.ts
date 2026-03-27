@@ -98,6 +98,57 @@ class ApiService {
     return { success: true, count: successCount, error: successCount < data.length ? `Partial: ${successCount}/${data.length}` : undefined };
   }
 
+  async seedVdsEventDataConcurrent(
+    data: VDSEventData[],
+    concurrency: number,
+    onProgress?: (current: number, total: number) => void
+  ): Promise<{ success: boolean; count: number; error?: string }> {
+    if (!this.config.baseUrl) {
+      return { success: false, count: 0, error: 'API URL not configured' };
+    }
+
+    let successCount = 0;
+    let completedCount = 0;
+    const total = data.length;
+    const errors: string[] = [];
+
+    const seedOne = async (item: VDSEventData): Promise<void> => {
+      try {
+        await axios.post(
+          `${this.config.baseUrl}/api/itd/vds/v-dSEvent-data/sequence`,
+          item,
+          { headers: this.getHeaders() }
+        );
+        successCount++;
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          errors.push(error.message);
+        } else {
+          errors.push(error instanceof Error ? error.message : 'Failed to seed record');
+        }
+      } finally {
+        completedCount++;
+        onProgress?.(completedCount, total);
+      }
+    };
+
+    // Process in batches of concurrency
+    for (let i = 0; i < data.length; i += concurrency) {
+      const batch = data.slice(i, i + concurrency);
+      await Promise.all(batch.map(seedOne));
+    }
+
+    if (successCount === 0) {
+      return { success: false, count: 0, error: errors[0] || 'All records failed' };
+    }
+
+    return { 
+      success: true, 
+      count: successCount, 
+      error: successCount < total ? `Partial: ${successCount}/${total}` : undefined 
+    };
+  }
+
   async testConnection(): Promise<{ success: boolean; message: string }> {
     if (!this.config.baseUrl) {
       return { success: false, message: 'API URL not configured' };

@@ -13,7 +13,10 @@ deviceId phải chọn trong số các vdsDevice có sẵn
 - nếu không muốn 1 field nào đó fake, có thể nhập manual, apply cho toàn bộ data sẽ seed
 - nếu muốn chi tiết hơn nữa, có thể generate preview và sửa manual từng field của mỗi record 
 
-- thêm tính năng đo thời gian 
+- có thể chọn giữa 3 mode 
+  + Batch: gửi số lượng lớn data   
+  + Sequential: gửi 1 data  
+  + Concurrent: giả lập số lượng lớn sequential request gọi đồng thời 
 
 ### problems
 - mỗi khi import pkceAuthService là lại tạo 1 instance mới, cần chuyển sang singleton
@@ -64,6 +67,11 @@ sửa CreationTime chính xác lúc insert vào database
 (cần kiểm tra lại lúc bufferService trigger thì CreationTime có chinh xac không)
 
 ---------
+
+intergrate mino io để lưu file
+sử dụng abp
+
+
 
 
 

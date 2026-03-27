@@ -49,7 +49,7 @@ const VDS_EVENT_FIELDS: FieldConfig[] = [
 ];
 
 type FieldMode = 'auto' | 'manual' | 'disabled';
-type SeedMode = 'batch' | 'sequential';
+type SeedMode = 'batch' | 'sequential' | 'concurrent';
 
 interface FieldSetting {
   mode: FieldMode;
@@ -58,6 +58,7 @@ interface FieldSetting {
 
 export default function VdsEventSeeder() {
   const [count, setCount] = useState(10);
+  const [concurrentCount, setConcurrentCount] = useState(5);
   const [seedMode, setSeedMode] = useState<SeedMode>('batch');
   const [fieldSettings, setFieldSettings] = useState<Record<string, FieldSetting>>({});
   const [previewData, setPreviewData] = useState<VDSEventData[]>([]);
@@ -175,7 +176,7 @@ export default function VdsEventSeeder() {
       }
     });
 
-    const recordCount = seedMode === 'sequential' ? 1 : count;
+    const recordCount = seedMode === 'sequential' ? 1 : (seedMode === 'concurrent' ? concurrentCount : count);
     return generateBatchData(recordCount, baseData, configs);
   };
 
@@ -221,7 +222,7 @@ export default function VdsEventSeeder() {
     }
 
     setIsLoading(true);
-    setProgress(seedMode === 'sequential' ? { current: 0, total: data.length } : null);
+    setProgress(seedMode !== 'batch' ? { current: 0, total: data.length } : null);
     const startTime = Date.now();
 
     const token = pkceAuthService.getAccessToken();
@@ -229,11 +230,22 @@ export default function VdsEventSeeder() {
       apiService.setToken(token);
     }
 
-    const response = seedMode === 'sequential'
-      ? await apiService.seedVdsEventDataSequential(data, (current, total) => {
-          setProgress({ current, total });
-        })
-      : await apiService.seedVdsEventData(data);
+    const seedWithProgress = async (): Promise<{ success: boolean; count: number; error?: string }> => {
+      switch (seedMode) {
+        case 'sequential':
+          return apiService.seedVdsEventDataSequential(data, (current, total) => {
+            setProgress({ current, total });
+          });
+        case 'concurrent':
+          return apiService.seedVdsEventDataConcurrent(data, concurrentCount, (current, total) => {
+            setProgress({ current, total });
+          });
+        default:
+          return apiService.seedVdsEventData(data);
+      }
+    };
+
+    let response = await seedWithProgress();
 
     const duration = Date.now() - startTime;
     const formatDuration = (ms: number) => {
@@ -246,11 +258,7 @@ export default function VdsEventSeeder() {
         const refreshed = await pkceAuthService.refreshAccessToken();
         if (refreshed) {
           apiService.setToken(pkceAuthService.getAccessToken() || '');
-          const retryResponse = seedMode === 'sequential'
-            ? await apiService.seedVdsEventDataSequential(data, (current, total) => {
-                setProgress({ current, total });
-              })
-            : await apiService.seedVdsEventData(data);
+          const retryResponse = await seedWithProgress();
           if (retryResponse.success) {
             const message = retryResponse.error 
               ? `Seeded ${retryResponse.count}/${data.length} records in ${formatDuration(duration)} (${retryResponse.error})`
@@ -423,11 +431,26 @@ export default function VdsEventSeeder() {
                     </svg>
                     Sequential
                   </button>
+                  <button
+                    onClick={() => { setSeedMode('concurrent'); setPreviewData([]); setEditMode(false); }}
+                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm transition-all ${
+                      seedMode === 'concurrent'
+                        ? 'bg-blue-500/20 border border-blue-500/50 text-blue-400'
+                        : 'bg-slate-800/50 border border-slate-700/50 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Concurrent
+                  </button>
                 </div>
                 <p className="text-xs text-slate-500 mt-1">
                   {seedMode === 'batch' 
                     ? 'Sends all records in a single request' 
-                    : 'Sends records one by one (/sequence endpoint)'}
+                    : seedMode === 'sequential'
+                    ? 'Sends records one by one (/sequence endpoint)'
+                    : 'Sends multiple requests concurrently (/sequence endpoint)'}
                 </p>
               </div>
 
@@ -454,6 +477,33 @@ export default function VdsEventSeeder() {
                       </div>
                     </div>
                     <span className="text-xs text-slate-500">Number of records to generate</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Concurrent Config */}
+              {seedMode === 'concurrent' && (
+                <div className="mb-4 p-3 bg-slate-800/30 rounded-lg border border-slate-700/30">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Concurrent Requests</label>
+                  <div className="flex items-center gap-2">
+                    <div className="relative w-[120px]">
+                      <input
+                        type="number"
+                        value={concurrentCount}
+                        onChange={(e) => setConcurrentCount(Math.max(1, parseInt(e.target.value) || 1))}
+                        min={1}
+                        className="w-full px-3 py-2 pr-14 bg-slate-900/50 border border-slate-600 rounded-lg text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                      />
+                      <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-0.5">
+                        <button onClick={() => setConcurrentCount(Math.max(1, concurrentCount - 1))} className="p-1 rounded bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-all">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
+                        </button>
+                        <button onClick={() => setConcurrentCount(concurrentCount + 1)} className="p-1 rounded bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-all">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                        </button>
+                      </div>
+                    </div>
+                    <span className="text-xs text-slate-500">requests will be sent in parallel</span>
                   </div>
                 </div>
               )}
@@ -692,7 +742,11 @@ export default function VdsEventSeeder() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
-                    {seedMode === 'sequential' ? 'Seed Record (Sequential)' : `Seed ${count} Records (Batch)`}
+                    {seedMode === 'sequential' 
+                      ? 'Seed Record (Sequential)' 
+                      : seedMode === 'concurrent'
+                      ? `Seed ${concurrentCount} Records (Concurrent)`
+                      : `Seed ${count} Records (Batch)`}
                   </>
                 )}
               </button>
