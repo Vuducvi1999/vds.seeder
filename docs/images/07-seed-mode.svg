@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 250">
+  <rect fill="#1e293b" width="800" height="250"/>
+  
+  <!-- Title -->
+  <text x="20" y="35" fill="white" font-family="Arial" font-size="16" font-weight="bold">Seed Mode</text>
+  
+  <!-- Batch button (selected) -->
+  <rect fill="#1e3a5f" x="20" y="50" width="180" height="50" rx="8" stroke="#3b82f6" stroke-width="2"/>
+  <text x="75" y="80" fill="#60a5fa" font-family="Arial" font-size="14" font-weight="bold">📦 Batch</text>
+  
+  <!-- Sequential button -->
+  <rect fill="#1e293b" x="210" y="50" width="180" height="50" rx="8" stroke="#475569"/>
+  <text x="265" y="80" fill="#94a3b8" font-family="Arial" font-size="14">☰ Sequential</text>
+  
+  <!-- Concurrent button -->
+  <rect fill="#1e293b" x="400" y="50" width="180" height="50" rx="8" stroke="#475569"/>
+  <text x="455" y="80" fill="#94a3b8" font-family="Arial" font-size="14">⚡ Concurrent</text>
+  
+  <!-- Descriptions -->
+  <rect fill="#0f172a" x="20" y="115" width="560" height="40" rx="6"/>
+  <text x="35" y="140" fill="#60a5fa" font-family="Arial" font-size="12">Batch:</text>
+  <text x="80" y="140" fill="#cbd5e1" font-family="Arial" font-size="12">Gửi tất cả records trong 1 request</text>
+  
+  <!-- Highlight Batch -->
+  <rect fill="none" x="20" y="50" width="180" height="50" rx="8" stroke="#f59e0b" stroke-width="3"/>
+  <path d="M 200 75 L 220 75 L 220 95" stroke="#f59e0b" stroke-width="2" fill="none"/>
+  <rect fill="#f59e0b" x="220" y="95" width="180" height="40" rx="4"/>
+  <text x="230" y="118" fill="#1e293b" font-family="Arial" font-size="11" font-weight="bold">Đang chọn: Batch Mode</text>
+  
+  <!-- Comparison table -->
+  <rect fill="#0f172a" x="20" y="170" width="760" height="70" rx="6"/>
+  <text x="35" y="195" fill="#94a3b8" font-family="Arial" font-size="11">| Batch | Sequential | Concurrent |</text>
+  <text x="35" y="215" fill="#60a5fa" font-family="Arial" font-size="11">| 1 request lớn | Nhiều request nhỏ | Nhiều request đồng thời |</text>
+</svg>
