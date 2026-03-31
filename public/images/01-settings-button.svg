@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200">
+  <rect fill="#1e293b" width="1200" height="200"/>
+  
+  <!-- Header -->
+  <rect fill="#0f172a" x="0" y="0" width="1200" height="60"/>
+  <rect fill="#3b82f6" x="20" y="12" width="40" height="36" rx="8"/>
+  <text x="70" y="38" fill="white" font-family="Arial" font-size="18" font-weight="bold">Data Seeder</text>
+  <text x="70" y="58" fill="#94a3b8" font-family="Arial" font-size="12">Select a resource to seed data</text>
+  
+  <!-- Settings button (highlighted) -->
+  <rect fill="#334155" x="1050" y="15" width="40" height="30" rx="6" stroke="#f59e0b" stroke-width="3"/>
+  <text x="1070" y="35" fill="#94a3b8" font-family="Arial" font-size="14">⚙</text>
+  
+  <!-- Annotation -->
+  <path d="M 1100 50 L 1100 80 L 1150 80" stroke="#f59e0b" stroke-width="2" fill="none"/>
+  <rect fill="#f59e0b" x="1050" y="80" width="150" height="35" rx="4"/>
+  <text x="1055" y="100" fill="#1e293b" font-family="Arial" font-size="11" font-weight="bold">Click Settings</text>
+  <text x="1055" y="112" fill="#1e293b" font-family="Arial" font-size="9">to configure API</text>
+</svg>

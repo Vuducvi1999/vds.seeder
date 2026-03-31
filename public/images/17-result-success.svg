@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 150">
+  <rect fill="#1e293b" width="600" height="150"/>
+  
+  <!-- Result box -->
+  <rect fill="#064e3b" x="20" y="20" width="560" height="60" rx="8" stroke="#10b981" stroke-width="2"/>
+  
+  <!-- Success icon -->
+  <circle fill="#10b981" cx="50" cy="50" r="15"/>
+  <text x="50" y="56" fill="white" font-family="Arial" font-size="16" text-anchor="middle">✓</text>
+  
+  <!-- Message -->
+  <text x="80" y="48" fill="#34d399" font-family="Arial" font-size="14" font-weight="bold">Success!</text>
+  <text x="80" y="65" fill="#94a3b8" font-family="Arial" font-size="12">Successfully seeded 10 records in 0.52s</text>
+  
+  <!-- Auto dismiss progress bar -->
+  <rect fill="#064e3b" x="20" y="80" width="560" height="6" rx="3"/>
+  <rect fill="#10b981" x="20" y="80" width="560" height="6" rx="3">
+    <animate attributeName="width" from="560" to="0" dur="3s" fill="freeze"/>
+  </rect>
+  
+  <!-- Note -->
+  <text x="20" y="110" fill="#64748b" font-family="Arial" font-size="11">Thông báo sẽ tự động biến mất sau 3 giây</text>
+</svg>

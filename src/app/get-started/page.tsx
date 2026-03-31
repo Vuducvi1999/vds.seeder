@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 function Step({ number, title, children }: { number: string; title: string; children: React.ReactNode }) {
@@ -27,14 +28,14 @@ function SubStep({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function InfoBox({ children, type = 'info' }: { children: React.ReactNode; type?: 'info' | 'warning' | 'success' }) {
+function InfoBox({ children, type = 'info', className = '' }: { children: React.ReactNode; type?: 'info' | 'warning' | 'success'; className?: string }) {
   const colors = {
     info: 'bg-blue-500/10 border-blue-500/30 text-blue-300',
     warning: 'bg-amber-500/10 border-amber-500/30 text-amber-300',
     success: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300',
   };
   return (
-    <div className={`p-4 rounded-lg border ${colors[type]} mb-4`}>
+    <div className={`p-4 rounded-lg border ${colors[type]} mb-4 ${className}`}>
       {children}
     </div>
   );
@@ -65,36 +66,45 @@ function FeatureTable({ headers, rows }: { headers: string[]; rows: { cells: str
   );
 }
 
+function ImageContainer({ src, alt }: { src: string; alt: string }) {
+  return (
+    <div className="my-6 relative">
+      <div className="relative w-full max-w-2xl mx-auto">
+        <Image
+          src={src}
+          alt={alt}
+          width={800}
+          height={400}
+          className="w-full h-auto rounded-lg border border-slate-700"
+          unoptimized
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function GetStartedPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
       <header className="border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Data Seeder</h1>
-                <p className="text-sm text-slate-400">Hướng dẫn sử dụng</p>
-              </div>
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+              </svg>
             </div>
-            <Link
-              href="/"
-              className="px-4 py-2 rounded-lg bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all text-sm"
-            >
-              ← Quay lại
-            </Link>
-          </div>
+            <div>
+              <h1 className="text-xl font-bold text-white">Data Seeder</h1>
+              <p className="text-sm text-slate-400">Hướng dẫn sử dụng</p>
+            </div>
+          </Link>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Requirements */}
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
@@ -165,6 +175,11 @@ export default function GetStartedPage() {
             
             <SubStep title="Cách mở Settings">
               <p className="text-slate-300 mb-3">Click vào icon <strong>Settings</strong> (hình bánh răng) ở góc phải header</p>
+              <ImageContainer src="/images/01-settings-button.svg" alt="Vị trí nút Settings" />
+            </SubStep>
+
+            <SubStep title="Giao diện Settings">
+              <ImageContainer src="/images/02-settings-modal.svg" alt="Giao diện Settings Modal" />
             </SubStep>
 
             <SubStep title="Các trường cần điền">
@@ -182,6 +197,7 @@ export default function GetStartedPage() {
 
             <SubStep title="Kiểm tra kết nối">
               <p className="text-slate-300 mb-3">Click <strong>Test Connection</strong> để xác nhận kết nối thành công</p>
+              <ImageContainer src="/images/03-test-connection.svg" alt="Kết quả Test Connection" />
             </SubStep>
 
             <InfoBox type="success">
@@ -192,7 +208,11 @@ export default function GetStartedPage() {
           <Step number="2" title="Đăng nhập">
             <p className="text-slate-400 mb-4">Sau khi cấu hình xong, hệ thống yêu cầu đăng nhập qua Auth Server.</p>
             
-            <ul className="space-y-2 text-slate-300">
+            <SubStep title="Giao diện chưa đăng nhập">
+              <ImageContainer src="/images/04-login-button.svg" alt="Nút Login" />
+            </SubStep>
+
+            <ul className="space-y-2 text-slate-300 mb-4">
               <li className="flex items-start gap-2">
                 <span className="text-blue-400">1.</span>
                 Click nút <strong className="text-blue-400">Login</strong> ở góc phải header
@@ -207,13 +227,25 @@ export default function GetStartedPage() {
               </li>
             </ul>
 
-            <InfoBox type="success" className="mt-4">
-              Khi đã đăng nhập, sẽ hiển thị thông tin user (username/email) và nút <strong>Logout</strong> để đăng xuất.
-            </InfoBox>
+            <SubStep title="Trạng thái đã đăng nhập">
+              <ImageContainer src="/images/05-logged-in.svg" alt="Trạng thái đã đăng nhập" />
+              <ul className="space-y-2 text-slate-300 mt-4">
+                <li className="flex items-start gap-2">
+                  <span className="text-emerald-400">✓</span>
+                  Hiển thị thông tin user (username/email)
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-emerald-400">✓</span>
+                  Nút Logout để đăng xuất
+                </li>
+              </ul>
+            </SubStep>
           </Step>
 
           <Step number="3" title="Chọn Resource cần Seed">
-            <p className="text-slate-400 mb-4">Từ trang chủ, chọn resource muốn seed data.</p>
+            <SubStep title="Trang chủ - Danh sách Resources">
+              <ImageContainer src="/images/06-resource-list.svg" alt="Trang chủ - Danh sách Resources" />
+            </SubStep>
             
             <FeatureTable
               headers={['Resource', 'Mô tả']}
@@ -222,11 +254,12 @@ export default function GetStartedPage() {
               ]}
             />
 
-            <p className="text-slate-300">Click vào card của resource cần seed → Hệ thống sẽ chuyển sang trang seed tương ứng</p>
+            <p className="text-slate-300 mt-4">Click vào card của resource cần seed → Hệ thống sẽ chuyển sang trang seed tương ứng</p>
           </Step>
 
           <Step number="4" title="Cấu hình chế độ Seed">
             <SubStep title="4.1 Chọn Seed Mode (Request Mode)">
+              <ImageContainer src="/images/07-seed-mode.svg" alt="Lựa chọn Seed Mode" />
               <FeatureTable
                 headers={['Mode', 'Mô tả']}
                 rows={[
@@ -238,20 +271,16 @@ export default function GetStartedPage() {
             </SubStep>
 
             <SubStep title="4.2 Cấu hình số lượng Record">
-              <ul className="space-y-2 text-slate-300">
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-400">•</span>
-                  <div><strong>Batch Mode:</strong> Nhập số records cần tạo</div>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-400">•</span>
-                  <div><strong>Concurrent Mode:</strong> Nhập số requests gửi đồng thời</div>
-                </li>
-              </ul>
+              <p className="text-slate-300 mb-3"><strong>Batch Mode:</strong></p>
+              <ImageContainer src="/images/08-batch-config.svg" alt="Cấu hình số lượng Batch" />
+              
+              <p className="text-slate-300 mt-4 mb-3"><strong>Concurrent Mode:</strong></p>
+              <ImageContainer src="/images/09-concurrent-config.svg" alt="Cấu hình Concurrent" />
             </SubStep>
 
             <SubStep title="4.3 Cấu hình Field Generation Mode">
               <p className="text-slate-300 mb-4">Mỗi field có 3 chế độ:</p>
+              <ImageContainer src="/images/10-field-mode-selection.svg" alt="Lựa chọn Field Mode" />
               <FeatureTable
                 headers={['Mode', 'Màu', 'Mô tả']}
                 rows={[
@@ -267,7 +296,8 @@ export default function GetStartedPage() {
 
               <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700/50 mt-4">
                 <h4 className="text-white font-medium mb-3">Ví dụ cấu hình Field:</h4>
-                <ul className="space-y-1 text-slate-300 text-sm">
+                <ImageContainer src="/images/11-field-config-example.svg" alt="Ví dụ cấu hình Field" />
+                <ul className="space-y-1 text-slate-300 text-sm mt-4">
                   <li>• <strong>Event Type:</strong> Auto (random)</li>
                   <li>• <strong>Source Type:</strong> Fixed = <code className="bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">1</code> (Camera)</li>
                   <li>• <strong>Image Path:</strong> NULL (không bắt buộc)</li>
@@ -279,10 +309,12 @@ export default function GetStartedPage() {
           <Step number="5" title="Generate & Preview Data">
             <SubStep title="5.1 Generate Preview">
               <p className="text-slate-300 mb-3">Click <strong className="text-blue-400">Generate Preview</strong> để xem trước data trước khi seed.</p>
+              <ImageContainer src="/images/12-generate-preview-btn.svg" alt="Nút Generate Preview" />
             </SubStep>
 
             <SubStep title="5.2 Xem & Chỉnh sửa Preview">
-              <ul className="space-y-2 text-slate-300">
+              <ImageContainer src="/images/13-preview-table.svg" alt="Bảng Preview Data" />
+              <ul className="space-y-2 text-slate-300 mt-4">
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
                   Hiển thị tất cả records dưới dạng bảng
@@ -296,6 +328,7 @@ export default function GetStartedPage() {
                   Fields ở chế độ Fixed/NULL hiển thị disabled
                 </li>
               </ul>
+              <ImageContainer src="/images/14-edit-cell.svg" alt="Click để sửa" />
             </SubStep>
 
             <SubStep title="5.3 Xóa Preview">
@@ -314,10 +347,13 @@ export default function GetStartedPage() {
                   { cells: ['Đã đăng nhập', '"Seed X Records (Batch/Sequential/Concurrent)"'], highlight: true },
                 ]}
               />
+              <p className="text-slate-300 mt-4 mb-3"><strong>Nút Seed (đã đăng nhập):</strong></p>
+              <ImageContainer src="/images/15-seed-button-ready.svg" alt="Nút Seed sẵn sàng" />
             </SubStep>
 
             <SubStep title="6.2 Quá trình Seed">
-              <ul className="space-y-2 text-slate-300">
+              <ImageContainer src="/images/16-seeding-progress.svg" alt="Progress khi seeding" />
+              <ul className="space-y-2 text-slate-300 mt-4">
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
                   Hiển thị progress: <code className="bg-slate-800 px-2 py-0.5 rounded text-blue-400">Seeding X/Y...</code>
@@ -330,16 +366,15 @@ export default function GetStartedPage() {
             </SubStep>
 
             <SubStep title="6.3 Kết quả">
-              <ul className="space-y-2 text-slate-300">
-                <li className="flex items-start gap-2">
-                  <span className="text-emerald-400">✓</span>
-                  <strong className="text-emerald-400">Thành công:</strong> Hiển thị thông báo xanh, tự động biến mất sau 3 giây
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-red-400">✗</span>
-                  <strong className="text-red-400">Thất bại:</strong> Hiển thị thông báo đỏ với chi tiết lỗi
-                </li>
-              </ul>
+              <p className="text-slate-300 mb-3"><strong className="text-emerald-400">Thành công:</strong></p>
+              <ImageContainer src="/images/17-result-success.svg" alt="Thông báo thành công" />
+              
+              <p className="text-slate-300 mt-6 mb-3"><strong className="text-red-400">Thất bại:</strong></p>
+              <ImageContainer src="/images/18-result-error.svg" alt="Thông báo lỗi" />
+              
+              <InfoBox type="info" className="mt-4">
+                Thông báo sẽ tự động biến mất sau 3 giây.
+              </InfoBox>
             </SubStep>
           </Step>
         </section>
