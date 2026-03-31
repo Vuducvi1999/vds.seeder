@@ -42,6 +42,12 @@ export default function Home() {
               <p className="text-sm text-slate-400">Select a resource to seed data</p>
             </div>
           </div>
+          <Link
+            href="/get-started"
+            className="px-4 py-2 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 transition-all text-sm border border-blue-500/30"
+          >
+            📖 Hướng dẫn
+          </Link>
         </div>
       </header>
 

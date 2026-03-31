@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VDS Seeder Guideline</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #1e293b;
+            border-bottom: 3px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #334155;
+            margin-top: 30px;
+        }
+        h3 {
+            color: #475569;
+        }
+        .toc {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .toc ol {
+            margin: 10px 0;
+        }
+        .step {
+            margin: 25px 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-left: 4px solid #3b82f6;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background: #f1f5f9;
+            font-weight: 600;
+        }
+        .image-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        }
+        .image-caption {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 8px;
+            font-style: italic;
+        }
+        .note {
+            background: #fef3c7;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #f59e0b;
+            margin: 15px 0;
+        }
+        .code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Consolas', monospace;
+            overflow-x: auto;
+        }
+        ul, ol {
+            margin: 10px 0;
+        }
+        li {
+            margin: 5px 0;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #e2e8f0;
+            margin: 30px 0;
+        }
+        .feature-box {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+
+<h1>VDS Seeder Guideline</h1>
+
+<div class="toc">
+<h2>Mục lục</h2>
+<ol>
+    <li><a href="#requirements">Requirements</a></li>
+    <li><a href="#huong-dan">Hướng dẫn sử dụng</a></li>
+    <li><a href="#tinh-nang">Các tính năng chính</a></li>
+    <li><a href="#known-issues">Known Issues</a></li>
+    <li><a href="#technical-notes">Technical Notes</a></li>
+</ol>
+</div>
+
+<hr>
+
+<h2 id="requirements">Requirements</h2>
+
+<h3>Auth Server Information</h3>
+<ul>
+    <li><strong>Root URL</strong>: Dùng để tạo link đăng nhập phía FE</li>
+    <li><strong>Client ID</strong>: ID của FE app đã đăng ký với auth server</li>
+    <li><strong>Redirect URL</strong>: Auth server sẽ dùng link đã đăng ký này của FE để gửi exchange code</li>
+    <li><strong>Scope</strong>: Resource cần cấp phép truy cập (chọn <code>MonoTemplate</code>)</li>
+</ul>
+
+<h3>Backend Server Information</h3>
+<ul>
+    <li><strong>Root URL</strong>: API của backend cho FE gọi</li>
+</ul>
+
+<div class="note">
+<strong>Lưu ý:</strong> Dựa vào thông tin auth server đã cung cấp, phải đăng nhập mới có thể sử dụng.
+</div>
+
+<hr>
+
+<h2 id="huong-dan">Hướng dẫn sử dụng</h2>
+
+<!-- Bước 1 -->
+<div class="step">
+<h3>Bước 1: Cấu hình API</h3>
+
+<p>Trước khi bắt đầu, cần cấu hình thông tin Auth Server và Backend API.</p>
+
+<h4>Cách mở Settings:</h4>
+<p>Click vào icon <strong>Settings</strong> (hình bánh răng) ở góc phải header</p>
+
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" width="600" height="100">
+  <rect fill="#1e293b" width="1200" height="200"/>
+  <rect fill="#0f172a" x="0" y="0" width="1200" height="60"/>
+  <rect fill="#3b82f6" x="20" y="12" width="40" height="36" rx="8"/>
+  <text x="70" y="38" fill="white" font-family="Arial" font-size="18" font-weight="bold">Data Seeder</text>
+  <text x="70" y="58" fill="#94a3b8" font-family="Arial" font-size="12">Select a resource to seed data</text>
+  <rect fill="#334155" x="1050" y="15" width="40" height="30" rx="6" stroke="#f59e0b" stroke-width="3"/>
+  <text x="1070" y="35" fill="#94a3b8" font-family="Arial" font-size="14">⚙</text>
+  <path d="M 1100 50 L 1100 80 L 1150 80" stroke="#f59e0b" stroke-width="2" fill="none"/>
+  <rect fill="#f59e0b" x="1050" y="80" width="150" height="35" rx="4"/>
+  <text x="1055" y="100" fill="#1e293b" font-family="Arial" font-size="11" font-weight="bold">Click Settings</text>
+  <text x="1055" y="112" fill="#1e293b" font-family="Arial" font-size="9">to configure API</text>
+</svg>
+<p class="image-caption">Hình 1: Vị trí nút Settings</p>
+</div>
+
+<h4>Giao diện Settings:</h4>
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="450" height="350">
+  <rect fill="#1e293b" width="900" height="700"/>
+  <rect fill="#0f172a" x="0" y="0" width="900" height="60"/>
+  <text x="30" y="40" fill="white" font-family="Arial" font-size="20" font-weight="bold">Settings</text>
+  <rect fill="#334155" x="830" y="15" width="40" height="30" rx="6"/>
+  <text x="850" y="35" fill="#94a3b8" font-family="Arial" font-size="14">✕</text>
+  <rect fill="#1e293b" x="50" y="100" width="800" height="550" rx="12" stroke="#475569"/>
+  <text x="70" y="140" fill="#cbd5e1" font-family="Arial" font-size="14">Auth Server URL</text>
+  <text x="210" y="140" fill="#ef4444" font-family="Arial" font-size="14">*</text>
+  <rect fill="#0f172a" x="70" y="150" width="760" height="50" rx="8" stroke="#3b82f6" stroke-width="2"/>
+  <text x="90" y="182" fill="#64748b" font-family="Arial" font-size="14">https://auth.example.com</text>
+  <text x="70" y="230" fill="#cbd5e1" font-family="Arial" font-size="14">Backend API URL</text>
+  <text x="200" y="230" fill="#ef4444" font-family="Arial" font-size="14">*</text>
+  <rect fill="#0f172a" x="70" y="240" width="760" height="50" rx="8"/>
+  <text x="90" y="272" fill="#64748b" font-family="Arial" font-size="14">https://api.example.com</text>
+  <text x="70" y="320" fill="#cbd5e1" font-family="Arial" font-size="14">Client ID</text>
+  <text x="145" y="320" fill="#ef4444" font-family="Arial" font-size="14">*</text>
+  <rect fill="#0f172a" x="70" y="330" width="760" height="50" rx="8"/>
+  <text x="90" y="362" fill="#64748b" font-family="Arial" font-size="14">SeedingTool</text>
+  <text x="70" y="410" fill="#cbd5e1" font-family="Arial" font-size="14">Redirect URI</text>
+  <text x="165" y="410" fill="#ef4444" font-family="Arial" font-size="14">*</text>
+  <rect fill="#0f172a" x="70" y="420" width="760" height="50" rx="8"/>
+  <text x="90" y="452" fill="#64748b" font-family="Arial" font-size="14">http://localhost:3000/callback</text>
+  <text x="70" y="500" fill="#cbd5e1" font-family="Arial" font-size="14">Scopes</text>
+  <text x="120" y="500" fill="#ef4444" font-family="Arial" font-size="14">*</text>
+  <rect fill="#0f172a" x="70" y="510" width="760" height="100" rx="8"/>
+  <rect fill="#1e3a5f" x="85" y="525" width="120" height="30" rx="4"/>
+  <rect fill="#3b82f6" x="90" y="530" width="18" height="18" rx="3"/>
+  <text x="115" y="545" fill="#60a5fa" font-family="Arial" font-size="11">MonoTemplate</text>
+  <rect x="215" y="525" width="100" height="30" rx="4"/>
+  <rect x="220" y="530" width="18" height="18" rx="3"/>
+  <text x="245" y="545" fill="#94a3b8" font-family="Arial" font-size="11">MasterData</text>
+  <rect fill="#334155" x="70" y="630" width="150" height="40" rx="8"/>
+  <text x="95" y="655" fill="#cbd5e1" font-family="Arial" font-size="12">⚡ Test Connection</text>
+  <rect fill="#334155" x="520" y="630" width="150" height="40" rx="8"/>
+  <text x="565" y="655" fill="#cbd5e1" font-family="Arial" font-size="12">Cancel</text>
+  <rect fill="#3b82f6" x="680" y="630" width="150" height="40" rx="8"/>
+  <text x="720" y="655" fill="white" font-family="Arial" font-size="12" font-weight="bold">Save Settings</text>
+</svg>
+<p class="image-caption">Hình 2: Giao diện Settings Modal</p>
+</div>
+
+<h4>Các trường cần điền:</h4>
+<table>
+    <tr><th>Trường</th><th>Mô tả</th><th>Ví dụ</th></tr>
+    <tr><td>Auth Server URL</td><td>URL của auth server</td><td><code>http://localhost:7001/</code></td></tr>
+    <tr><td>Backend API URL</td><td>URL của backend API</td><td><code>http://localhost:7001/</code></td></tr>
+    <tr><td>Client ID</td><td>ID đã đăng ký với auth</td><td><code>SeedingTool</code></td></tr>
+    <tr><td>Redirect URI</td><td>URL callback (tự động điền)</td><td><code>http://localhost:3000/callback</code></td></tr>
+    <tr><td>Scopes</td><td>Quyền truy cập</td><td><code>MonoTemplate</code></td></tr>
+</table>
+
+<h4>Kiểm tra kết nối:</h4>
+<p>Click <strong>Test Connection</strong> để xác nhận kết nối thành công</p>
+
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="450" height="350">
+  <rect fill="#1e293b" width="900" height="700"/>
+  <rect fill="#0f172a" x="0" y="0" width="900" height="60"/>
+  <text x="30" y="40" fill="white" font-family="Arial" font-size="20" font-weight="bold">Settings</text>
+  <rect fill="#334155" x="830" y="15" width="40" height="30" rx="6"/>
+  <rect fill="#1e293b" x="50" y="100" width="800" height="550" rx="12" stroke="#475569"/>
+  <rect fill="#f59e0b" x="70" y="620" width="180" height="45" rx="8" stroke="#f59e0b" stroke-width="2"/>
+  <text x="95" y="648" fill="white" font-family="Arial" font-size="13" font-weight="bold">⚡ Test Connection</text>
+  <rect fill="#064e3b" x="260" y="625" width="250" height="35" rx="6"/>
+  <text x="275" y="648" fill="#34d399" font-family="Arial" font-size="12">✓ Connection successful</text>
+  <path d="M 160 610 L 160 595 L 320 595" stroke="#f59e0b" stroke-width="2" fill="none"/>
+  <rect fill="#f59e0b" x="100" y="570" width="220" height="30" rx="4"/>
+  <text x="110" y="590" fill="#1e293b" font-family="Arial" font-size="11" font-weight="bold">Kết quả kiểm tra kết nối</text>
+</svg>
+<p class="image-caption">Hình 3: Kết quả Test Connection</p>
+</div>
+
+<h4>Lưu cấu hình:</h4>
+<p>Click <strong>Save Settings</strong> để lưu lại</p>
+</div>
+
+<!-- Bước 2 -->
+<div class="step">
+<h3>Bước 2: Đăng nhập</h3>
+
+<p>Sau khi cấu hình xong, hệ thống yêu cầu đăng nhập qua Auth Server.</p>
+
+<h4>Giao diện chưa đăng nhập:</h4>
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" width="600" height="100">
+  <rect fill="#1e293b" width="1200" height="200"/>
+  <rect fill="#0f172a" x="0" y="0" width="1200" height="60"/>
+  <rect fill="#3b82f6" x="20" y="12" width="40" height="36" rx="8"/>
+  <text x="70" y="38" fill="white" font-family="Arial" font-size="18" font-weight="bold">Data Seeder</text>
+  <rect fill="#334155" x="1050" y="15" width="40" height="30" rx="6"/>
+  <text x="1070" y="35" fill="#94a3b8" font-family="Arial" font-size="14">⚙</text>
+  <rect fill="#3b82f6" x="1100" y="12" width="80" height="36" rx="8" stroke="#f59e0b" stroke-width="3"/>
+  <text x="1125" y="35" fill="white" font-family="Arial" font-size="12" font-weight="bold">Login</text>
+  <path d="M 1140 60 L 1140 90 L 1180 90" stroke="#f59e0b" stroke-width="2" fill="none"/>
+  <rect fill="#f59e0b" x="1080" y="90" width="120" height="35" rx="4"/>
+  <text x="1090" y="108" fill="#1e293b" font-family="Arial" font-size="11" font-weight="bold">Click để đăng nhập</text>
+  <text x="1090" y="120" fill="#1e293b" font-family="Arial" font-size="9">Auth Server</text>
+</svg>
+<p class="image-caption">Hình 4: Nút Login</p>
+</div>
+
+<p><strong>Click nút Login:</strong></p>
+<ul>
+    <li>Hệ thống sẽ redirect sang trang đăng nhập của Auth Server</li>
+    <li>Sau khi đăng nhập thành công, sẽ quay lại ứng dụng</li>
+</ul>
+
+<h4>Trạng thái đã đăng nhập:</h4>
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 200" width="600" height="100">
+  <rect fill="#1e293b" width="1200" height="200"/>
+  <rect fill="#0f172a" x="0" y="0" width="1200" height="60"/>
+  <rect fill="#3b82f6" x="20" y="12" width="40" height="36" rx="8"/>
+  <text x="70" y="38" fill="white" font-family="Arial" font-size="18" font-weight="bold">Data Seeder</text>
+  <rect fill="#334155" x="1050" y="15" width="40" height="30" rx="6"/>
+  <text x="1070" y="35" fill="#94a3b8" font-family="Arial" font-size="14">⚙</text>
+  <rect fill="#334155" x="1100" y="15" width="80" height="30" rx="6"/>
+  <circle fill="#10b981" cx="1115" cy="30" r="5"/>
+  <text x="1128" y="35" fill="#cbd5e1" font-family="Arial" font-size="11">admin</text>
+  <rect fill="#7f1d1d" x="1050" y="50" width="40" height="30" rx="6" stroke="#ef4444" stroke-width="2"/>
+  <text x="1070" y="68" fill="#f87171" font-family="Arial" font-size="14">↩</text>
+  <path d="M 1140 50 L 1140 90 L 1000 90" stroke="#10b981" stroke-width="2" fill="none"/>
+  <rect fill="#10b981" x="980" y="90" width="160" height="50" rx="4"/>
+  <text x="990" y="108" fill="#1e293b" font-family="Arial" font-size="11" font-weight="bold">✓ Đã đăng nhập</text>
+  <text x="990" y="122" fill="#1e293b" font-family="Arial" font-size="9">admin@company.com</text>
+</svg>
+<p class="image-caption">Hình 5: Trạng thái đã đăng nhập</p>
+</div>
+
+<ul>
+    <li>Hiển thị thông tin user (username/email)</li>
+    <li>Nút Logout để đăng xuất</li>
+</ul>
+</div>
+
+<!-- Bước 3 -->
+<div class="step">
+<h3>Bước 3: Chọn Resource cần Seed</h3>
+
+<h4>Trang chủ - Danh sách Resources:</h4>
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600" width="600" height="300">
+  <rect fill="#1e293b" width="1200" height="600"/>
+  <rect fill="#0f172a" x="0" y="0" width="1200" height="60"/>
+  <rect fill="#3b82f6" x="20" y="12" width="40" height="36" rx="8"/>
+  <text x="70" y="38" fill="white" font-family="Arial" font-size="18" font-weight="bold">Data Seeder</text>
+  <text x="70" y="58" fill="#94a3b8" font-family="Arial" font-size="12">Select a resource to seed data</text>
+  <rect fill="#334155" x="40" y="100" width="350" height="150" rx="12" stroke="#3b82f6" stroke-width="3"/>
+  <rect fill="#1e3a5f" x="60" y="120" width="50" height="50" rx="8"/>
+  <text x="75" y="150" fill="#60a5fa" font-family="Arial" font-size="24">📹</text>
+  <text x="130" y="145" fill="white" font-family="Arial" font-size="16" font-weight="bold">VDS Event</text>
+  <text x="130" y="165" fill="#94a3b8" font-family="Arial" font-size="12">Video Detection System Event Data</text>
+  <text x="280" y="225" fill="#3b82f6" font-family="Arial" font-size="11">Click to seed →</text>
+  <path d="M 215 250 L 215 290 L 180 290" stroke="#3b82f6" stroke-width="2" fill="none"/>
+  <rect fill="#3b82f6" x="60" y="290" width="180" height="50" rx="4"/>
+  <text x="70" y="308" fill="white" font-family="Arial" font-size="11" font-weight="bold">Chọn Resource</text>
+  <text x="70" y="322" fill="#bfdbfe" font-family="Arial" font-size="9">để bắt đầu seed</text>
+</svg>
+<p class="image-caption">Hình 6: Trang chủ - Danh sách Resources</p>
+</div>
+
+<h4>Các Resource hiện có:</h4>
+<table>
+    <tr><th>Resource</th><th>Mô tả</th></tr>
+    <tr><td>VDS Event</td><td>Video Detection System Event Data</td></tr>
+</table>
+
+<h4>Cách chọn:</h4>
+<ul>
+    <li>Click vào card của resource cần seed</li>
+    <li>Hệ thống sẽ chuyển sang trang seed tương ứng</li>
+</ul>
+</div>
+
+<!-- Bước 4 -->
+<div class="step">
+<h3>Bước 4: Cấu hình chế độ Seed</h3>
+
+<h4>4.1 Chọn Seed Mode (Request Mode)</h4>
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 250" width="400" height="125">
+  <rect fill="#1e293b" width="800" height="250"/>
+  <text x="20" y="35" fill="white" font-family="Arial" font-size="16" font-weight="bold">Seed Mode</text>
+  <rect fill="#1e3a5f" x="20" y="50" width="180" height="50" rx="8" stroke="#3b82f6" stroke-width="2"/>
+  <text x="75" y="80" fill="#60a5fa" font-family="Arial" font-size="14" font-weight="bold">📦 Batch</text>
+  <rect fill="#1e293b" x="210" y="50" width="180" height="50" rx="8" stroke="#475569"/>
+  <text x="265" y="80" fill="#94a3b8" font-family="Arial" font-size="14">☰ Sequential</text>
+  <rect fill="#1e293b" x="400" y="50" width="180" height="50" rx="8" stroke="#475569"/>
+  <text x="455" y="80" fill="#94a3b8" font-family="Arial" font-size="14">⚡ Concurrent</text>
+  <rect fill="#0f172a" x="20" y="115" width="560" height="40" rx="6"/>
+  <text x="35" y="140" fill="#60a5fa" font-family="Arial" font-size="12">Batch:</text>
+  <text x="80" y="140" fill="#cbd5e1" font-family="Arial" font-size="12">Gửi tất cả records trong 1 request</text>
+  <rect fill="none" x="20" y="50" width="180" height="50" rx="8" stroke="#f59e0b" stroke-width="3"/>
+  <path d="M 200 75 L 220 75 L 220 95" stroke="#f59e0b" stroke-width="2" fill="none"/>
+  <rect fill="#f59e0b" x="220" y="95" width="180" height="40" rx="4"/>
+  <text x="230" y="118" fill="#1e293b" font-family="Arial" font-size="11" font-weight="bold">Đang chọn: Batch Mode</text>
+  <rect fill="#0f172a" x="20" y="170" width="760" height="70" rx="6"/>
+  <text x="35" y="195" fill="#94a3b8" font-family="Arial" font-size="11">| Batch | Sequential | Concurrent |</text>
+  <text x="35" y="215" fill="#60a5fa" font-family="Arial" font-size="11">| 1 request lớn | Nhiều request nhỏ | Nhiều request đồng thời |</text>
+</svg>
+<p class="image-caption">Hình 7: Lựa chọn Seed Mode</p>
+</div>
+
+<table>
+    <tr><th>Mode</th><th>Mô tả</th></tr>
+    <tr><td><strong>Batch</strong></td><td>Gửi tất cả records trong 1 request</td></tr>
+    <tr><td><strong>Sequential</strong></td><td>Gửi từng record một (/sequence endpoint)</td></tr>
+    <tr><td><strong>Concurrent</strong></td><td>Gửi nhiều requests đồng thời (/sequence endpoint)</td></tr>
+</table>
+
+<h4>4.2 Cấu hình số lượng Record</h4>
+
+<p><strong>Batch Mode:</strong></p>
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 200" width="250" height="100">
+  <rect fill="#1e293b" width="500" height="200"/>
+  <text x="20" y="35" fill="white" font-family="Arial" font-size="14" font-weight="bold">Seed Config (Batch Mode)</text>
+  <rect fill="#0f172a" x="20" y="50" width="250" height="80" rx="8" stroke="#475569"/>
+  <text x="35" y="75" fill="#cbd5e1" font-family="Arial" font-size="12">Number of records</text>
+  <rect fill="#1e293b" x="35" y="85" width="100" height="35" rx="6" stroke="#3b82f6" stroke-width="2"/>
+  <text x="70" y="110" fill="white" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle">10</text>
+  <rect fill="#334155" x="145" y="90" width="25" height="25" rx="4"/>
+  <text x="157" y="108" fill="#cbd5e1" font-family="Arial" font-size="14">−</text>
+  <rect fill="#334155" x="175" y="90" width="25" height="25" rx="4"/>
+  <text x="187" y="108" fill="#cbd5e1" font-family="Arial" font-size="14">+</text>
+  <text x="35" y="145" fill="#64748b" font-family="Arial" font-size="11">Số lượng records sẽ được tạo và gửi</text>
+  <path d="M 85 135 L 85 155 L 130 155" stroke="#f59e0b" stroke-width="2" fill="none"/>
+  <rect fill="#f59e0b" x="55" y="155" width="100" height="30" rx="4"/>
+  <text x="65" y="173" fill="#1e293b" font-family="Arial" font-size="10" font-weight="bold">Nhập số lượng</text>
+  <text x="65" y="183" fill="#1e293b" font-family="Arial" font-size="8">records cần seed</text>
+</svg>
+<p class="image-caption">Hình 8: Cấu hình số lượng Batch</p>
+</div>
+
+<p><strong>Concurrent Mode:</strong></p>
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 250" width="300" height="125">
+  <rect fill="#1e293b" width="600" height="250"/>
+  <text x="20" y="35" fill="white" font-family="Arial" font-size="14" font-weight="bold">Concurrent Mode Config</text>
+  <rect fill="#0f172a" x="20" y="50" width="300" height="80" rx="8" stroke="#475569"/>
+  <text x="35" y="75" fill="#cbd5e1" font-family="Arial" font-size="12">Concurrent Requests</text>
+  <rect fill="#1e293b" x="35" y="85" width="100" height="35" rx="6" stroke="#3b82f6" stroke-width="2"/>
+  <text x="70" y="110" fill="white" font-family="Arial" font-size="18" font-weight="bold" text-anchor="middle">5</text>
+  <rect fill="#334155" x="145" y="90" width="25" height="25" rx="4"/>
+  <text x="157" y="108" fill="#cbd5e1" font-family="Arial" font-size="14">−</text>
+  <rect fill="#334155" x="175" y="90" width="25" height="25" rx="4"/>
+  <text x="187" y="108" fill="#cbd5e1" font-family="Arial" font-size="14">+</text>
+  <text x="35" y="145" fill="#64748b" font-family="Arial" font-size="11">requests will be sent in parallel</text>
+  <rect fill="#0f172a" x="350" y="50" width="230" height="140" rx="8"/>
+  <text x="365" y="75" fill="#94a3b8" font-family="Arial" font-size="11">Sơ đồ Concurrent:</text>
+  <rect fill="#3b82f6" x="370" y="90" width="60" height="25" rx="4"/>
+  <text x="400" y="107" fill="white" font-family="Arial" font-size="10" text-anchor="middle">Req 1</text>
+  <rect fill="#3b82f6" x="370" y="120" width="60" height="25" rx="4"/>
+  <text x="400" y="137" fill="white" font-family="Arial" font-size="10" text-anchor="middle">Req 2</text>
+  <rect fill="#3b82f6" x="370" y="150" width="60" height="25" rx="4"/>
+  <text x="400" y="167" fill="white" font-family="Arial" font-size="10" text-anchor="middle">Req 3</text>
+  <text x="445" y="110" fill="#10b981" font-family="Arial" font-size="14">→</text>
+  <text x="445" y="140" fill="#10b981" font-family="Arial" font-size="14">→</text>
+  <text x="445" y="170" fill="#10b981" font-family="Arial" font-size="14">→</text>
+  <rect fill="#10b981" x="470" y="95" width="80" height="80" rx="4"/>
+  <text x="510" y="140" fill="white" font-family="Arial" font-size="11" text-anchor="middle">Backend</text>
+</svg>
+<p class="image-caption">Hình 9: Cấu hình Concurrent</p>
+</div>
+
+<h4>4.3 Cấu hình Field Generation Mode</h4>
+
+<p>Mỗi field có 3 chế độ:</p>
+
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 300" width="700" height="300">
+  <rect fill="#1e293b" width="700" height="300"/>
+  <text x="20" y="35" fill="white" font-family="Arial" font-size="14" font-weight="bold">Field Generation Mode</text>
+  <rect fill="#1e3a5f" x="20" y="50" width="200" height="35" rx="6"/>
+  <circle fill="#3b82f6" cx="40" cy="67" r="8"/>
+  <text x="55" y="72" fill="#60a5fa" font-family="Arial" font-size="12">Auto (Random)</text>
+  <rect fill="#064e3b" x="240" y="50" width="200" height="35" rx="6"/>
+  <circle fill="#10b981" cx="260" cy="67" r="8"/>
+  <text x="275" y="72" fill="#34d399" font-family="Arial" font-size="12">Fixed (Manual)</text>
+  <rect fill="#334155" x="460" y="50" width="200" height="35" rx="6"/>
+  <circle fill="#6b7280" cx="480" cy="67" r="8"/>
+  <text x="495" y="72" fill="#9ca3af" font-family="Arial" font-size="12">NULL (Disabled)</text>
+  <rect fill="#1e3a5f" x="20" y="100" width="200" height="60" rx="8" stroke="#3b82f6" stroke-width="2"/>
+  <text x="35" y="125" fill="white" font-family="Arial" font-size="12">Event Type</text>
+  <text x="35" y="140" fill="#ef4444" font-family="Arial" font-size="10">*</text>
+  <circle fill="#3b82f6" cx="90" cy="150" r="6"/>
+  <text x="105" y="154" fill="#60a5fa" font-family="Arial" font-size="10">Auto</text>
+  <rect fill="#064e3b" x="240" y="100" width="200" height="60" rx="8" stroke="#10b981" stroke-width="2"/>
+  <text x="255" y="125" fill="white" font-family="Arial" font-size="12">Source Type</text>
+  <text x="255" y="140" fill="#ef4444" font-family="Arial" font-size="10">*</text>
+  <circle fill="#10b981" cx="310" cy="150" r="6"/>
+  <text x="325" y="154" fill="#34d399" font-family="Arial" font-size="10">Fixed</text>
+  <rect fill="#1e3a5f" x="460" y="100" width="200" height="60" rx="8"/>
+  <text x="475" y="125" fill="white" font-family="Arial" font-size="12">Location</text>
+  <text x="475" y="140" fill="#ef4444" font-family="Arial" font-size="10">*</text>
+  <circle fill="#3b82f6" cx="530" cy="150" r="6"/>
+  <text x="545" y="154" fill="#60a5fa" font-family="Arial" font-size="10">Auto</text>
+  <rect fill="#334155" x="20" y="180" width="200" height="60" rx="8"/>
+  <text x="35" y="205" fill="white" font-family="Arial" font-size="12">Image Path</text>
+  <circle fill="#6b7280" cx="90" cy="230" r="6"/>
+  <text x="105" y="234" fill="#9ca3af" font-family="Arial" font-size="10">NULL</text>
+  <rect fill="#0f172a" x="20" y="260" width="660" height="30" rx="4"/>
+  <text x="35" y="280" fill="#94a3b8" font-family="Arial" font-size="11">• Auto: Random giá trị  • Fixed: Giá trị cố định cho tất cả  • NULL: Bỏ trống (required field không chọn được)</text>
+</svg>
+<p class="image-caption">Hình 10: Lựa chọn Field Mode</p>
+</div>
+
+<table>
+    <tr><th>Mode</th><th>Màu</th><th>Mô tả</th></tr>
+    <tr><td><strong>Auto</strong></td><td>Xanh dương</td><td>Fake random cho mỗi record</td></tr>
+    <tr><td><strong>Fixed</strong></td><td>Xanh lá</td><td>Giá trị cố định (nhập manual)</td></tr>
+    <tr><td><strong>NULL</strong></td><td>Xám</td><td>Để NULL cho tất cả records</td></tr>
+</table>
+
+<h4>Ví dụ cấu hình Field:</h4>
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 350" width="700" height="350">
+  <rect fill="#1e293b" width="700" height="350"/>
+  <text x="20" y="35" fill="white" font-family="Arial" font-size="14" font-weight="bold">Field Configuration Example</text>
+  <rect fill="#1e3a5f" x="20" y="50" width="300" height="80" rx="8" stroke="#3b82f6" stroke-width="2"/>
+  <text x="35" y="75" fill="white" font-family="Arial" font-size="12">Event Type</text>
+  <text x="35" y="90" fill="#ef4444" font-family="Arial" font-size="10">*</text>
+  <circle fill="#3b82f6" cx="60" cy="115" r="6"/>
+  <text x="75" y="119" fill="#60a5fa" font-family="Arial" font-size="10">Auto</text>
+  <circle fill="#475569" cx="120" cy="115" r="5"/>
+  <text x="135" y="119" fill="#9ca3af" font-family="Arial" font-size="10">Fixed</text>
+  <circle fill="#475569" cx="190" cy="115" r="5"/>
+  <text x="205" y="119" fill="#9ca3af" font-family="Arial" font-size="10">NULL</text>
+  <rect fill="#3b82f6" x="250" y="108" width="55" height="18" rx="4"/>
+  <text x="258" y="120" fill="white" font-family="Arial" font-size="9">random</text>
+  <rect fill="#064e3b" x="20" y="145" width="300" height="100" rx="8" stroke="#10b981" stroke-width="2"/>
+  <text x="35" y="170" fill="white" font-family="Arial" font-size="12">Source Type</text>
+  <text x="35" y="185" fill="#ef4444" font-family="Arial" font-size="10">*</text>
+  <circle fill="#475569" cx="60" cy="210" r="5"/>
+  <text x="75" y="214" fill="#9ca3af" font-family="Arial" font-size="10">Auto</text>
+  <circle fill="#10b981" cx="120" cy="210" r="6"/>
+  <text x="135" y="214" fill="#34d399" font-family="Arial" font-size="10">Fixed</text>
+  <circle fill="#475569" cx="190" cy="210" r="5"/>
+  <text x="205" y="214" fill="#9ca3af" font-family="Arial" font-size="10">NULL</text>
+  <rect fill="#0f172a" x="35" y="225" width="260" height="15" rx="3"/>
+  <text x="45" y="236" fill="#34d399" font-family="Arial" font-size="9">1 - Camera</text>
+  <rect fill="#334155" x="20" y="260" width="300" height="70" rx="8"/>
+  <text x="35" y="285" fill="white" font-family="Arial" font-size="12">Image Path</text>
+  <circle fill="#475569" cx="60" cy="310" r="5"/>
+  <text x="75" y="314" fill="#9ca3af" font-family="Arial" font-size="10">Auto</text>
+  <circle fill="#475569" cx="120" cy="310" r="5"/>
+  <text x="135" y="314" fill="#9ca3af" font-family="Arial" font-size="10">Fixed</text>
+  <circle fill="#6b7280" cx="190" cy="310" r="6"/>
+  <text x="205" y="314" fill="#9ca3af" font-family="Arial" font-size="10">NULL</text>
+  <rect fill="#0f172a" x="340" y="50" width="340" height="280" rx="8"/>
+  <text x="360" y="80" fill="#94a3b8" font-family="Arial" font-size="12">Tổng kết cấu hình:</text>
+  <rect fill="#1e3a5f" x="360" y="100" width="300" height="50" rx="4"/>
+  <text x="375" y="120" fill="#60a5fa" font-family="Arial" font-size="11">Event Type: Auto</text>
+  <text x="375" y="138" fill="#64748b" font-family="Arial" font-size="10">→ Random giá trị</text>
+  <rect fill="#064e3b" x="360" y="160" width="300" height="50" rx="4"/>
+  <text x="375" y="180" fill="#34d399" font-family="Arial" font-size="11">Source Type: Fixed = 1</text>
+  <text x="375" y="198" fill="#64748b" font-family="Arial" font-size="10">→ Tất cả records = Camera</text>
+  <rect fill="#334155" x="360" y="220" width="300" height="50" rx="4"/>
+  <text x="375" y="240" fill="#9ca3af" font-family="Arial" font-size="11">Image Path: NULL</text>
+  <text x="375" y="258" fill="#64748b" font-family="Arial" font-size="10">→ Bỏ trống tất cả</text>
+  <text x="360" y="295" fill="#f59e0b" font-family="Arial" font-size="11">💡 Áp dụng cho TẤT CẢ records</text>
+</svg>
+<p class="image-caption">Hình 11: Ví dụ cấu hình Field</p>
+</div>
+
+<ul>
+    <li><strong>Event Type</strong>: Auto (random)</li>
+    <li><strong>Source Type</strong>: Fixed = <code>1</code> (Camera)</li>
+    <li><strong>Image Path</strong>: NULL (không bắt buộc)</li>
+</ul>
+</div>
+
+<!-- Bước 5 -->
+<div class="step">
+<h3>Bước 5: Generate & Preview Data</h3>
+
+<h4>5.1 Generate Preview</h4>
+
+<p>Click <strong>Generate Preview</strong> để xem trước data trước khi seed.</p>
+
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 180" width="500" height="180">
+  <rect fill="#1e293b" width="500" height="180"/>
+  <rect fill="#3b82f6" x="20" y="20" width="200" height="50" rx="8" stroke="#f59e0b" stroke-width="3"/>
+  <text x="45" y="52" fill="white" font-family="Arial" font-size="16">👁 Generate Preview</text>
+  <path d="M 120 80 L 120 120 L 200 120" stroke="#f59e0b" stroke-width="2" fill="none"/>
+  <rect fill="#f59e0b" x="50" y="120" width="200" height="45" rx="4"/>
+  <text x="65" y="140" fill="#1e293b" font-family="Arial" font-size="12" font-weight="bold">Click để xem trước data</text>
+  <text x="65" y="155" fill="#1e293b" font-family="Arial" font-size="10">trước khi seed vào database</text>
+</svg>
+<p class="image-caption">Hình 12: Nút Generate Preview</p>
+</div>
+
+<h4>5.2 Xem & Chỉnh sửa Preview</h4>
+
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 350" width="700" height="350">
+  <rect fill="#1e293b" width="700" height="350"/>
+  <rect fill="#0f172a" x="20" y="20" width="660" height="50" rx="8"/>
+  <text x="40" y="45" fill="white" font-family="Arial" font-size="14" font-weight="bold">Data Preview</text>
+  <text x="40" y="62" fill="#64748b" font-family="Arial" font-size="10">Click cells to edit • 10 records</text>
+  <rect fill="#1e293b" x="20" y="85" width="660" height="25" rx="4"/>
+  <text x="35" y="102" fill="#64748b" font-family="Arial" font-size="10">#</text>
+  <text x="60" y="102" fill="#64748b" font-family="Arial" font-size="10">Event Type</text>
+  <text x="180" y="102" fill="#64748b" font-family="Arial" font-size="10">Source Type</text>
+  <text x="300" y="102" fill="#64748b" font-family="Arial" font-size="10">Location</text>
+  <rect fill="#0f172a" x="20" y="115" width="660" height="30" rx="4"/>
+  <text x="35" y="135" fill="#64748b" font-family="Arial" font-size="10">1</text>
+  <rect fill="#1e293b" x="55" y="120" width="110" height="22" rx="4" stroke="#3b82f6" stroke-width="1"/>
+  <text x="65" y="135" fill="#60a5fa" font-family="Arial" font-size="9">PPE Detection</text>
+  <rect fill="#1e293b" x="175" y="120" width="110" height="22" rx="4"/>
+  <text x="185" y="135" fill="#cbd5e1" font-family="Arial" font-size="9">1 - Camera</text>
+  <rect fill="#1e293b" x="295" y="120" width="110" height="22" rx="4" stroke="#3b82f6" stroke-width="1"/>
+  <text x="305" y="135" fill="#60a5fa" font-family="Arial" font-size="9">Zone A</text>
+  <rect fill="#1e293b" x="20" y="150" width="660" height="30" rx="4"/>
+  <text x="35" y="170" fill="#64748b" font-family="Arial" font-size="10">2</text>
+  <rect fill="#1e293b" x="55" y="155" width="110" height="22" rx="4" stroke="#3b82f6" stroke-width="1"/>
+  <text x="65" y="170" fill="#60a5fa" font-family="Arial" font-size="9">Restricted Area</text>
+  <rect fill="#1e293b" x="175" y="155" width="110" height="22" rx="4"/>
+  <text x="185" y="170" fill="#cbd5e1" font-family="Arial" font-size="9">1 - Camera</text>
+  <rect fill="#1e293b" x="295" y="155" width="110" height="22" rx="4" stroke="#3b82f6" stroke-width="1"/>
+  <text x="305" y="170" fill="#60a5fa" font-family="Arial" font-size="9">Zone B</text>
+  <rect fill="#f59e0b" x="50" y="118" width="120" height="28" rx="4" fill="none" stroke="#f59e0b" stroke-width="2"/>
+  <path d="M 170 130 L 200 130 L 200 155" stroke="#f59e0b" stroke-width="2" fill="none"/>
+  <rect fill="#f59e0b" x="160" y="155" width="150" height="35" rx="4"/>
+  <text x="170" y="173" fill="#1e293b" font-family="Arial" font-size="10" font-weight="bold">Click để sửa</text>
+  <text x="170" y="185" fill="#1e293b" font-family="Arial" font-size="8">(chỉ Auto fields)</text>
+  <rect fill="#334155" x="20" y="195" width="660" height="30" rx="4"/>
+  <text x="35" y="215" fill="#94a3b8" font-family="Arial" font-size="10">Chú thích: </text>
+  <rect fill="#3b82f6" x="100" y="200" width="12" height="12" rx="2"/>
+  <text x="118" y="210" fill="#94a3b8" font-family="Arial" font-size="9">Editable</text>
+  <rect fill="#334155" x="190" y="200" width="12" height="12" rx="2"/>
+  <text x="208" y="210" fill="#94a3b8" font-family="Arial" font-size="9">Fixed/NULL (disabled)</text>
+</svg>
+<p class="image-caption">Hình 13: Bảng Preview Data</p>
+</div>
+
+<h4>Tính năng Preview:</h4>
+<ul>
+    <li>Hiển thị tất cả records dưới dạng bảng</li>
+    <li>Click vào ô để chỉnh sửa giá trị (chỉ fields ở chế độ Auto mới sửa được)</li>
+    <li>Fields ở chế độ Fixed/NULL hiển thị disabled</li>
+</ul>
+
+<h4>5.3 Xóa Preview</h4>
+<p>Click <strong>Clear</strong> để xóa preview và quay lại chế độ cấu hình.</p>
+</div>
+
+<!-- Bước 6 -->
+<div class="step">
+<h3>Bước 6: Seed Data</h3>
+
+<h4>6.1 Chuẩn bị Seed</h4>
+
+<p>Tùy trạng thái, nút Seed sẽ hiển thị khác nhau:</p>
+
+<table>
+    <tr><th>Trạng thái</th><th>Text hiển thị</th></tr>
+    <tr><td>Chưa cấu hình API</td><td>"Configure API in Settings"</td></tr>
+    <tr><td>Chưa đăng nhập</td><td>"Login to Seed Data"</td></tr>
+    <tr><td>Đã đăng nhập</td><td>"Seed X Records (Batch/Sequential/Concurrent)"</td></tr>
+</table>
+
+<h4>Nút Seed (đã đăng nhập):</h4>
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 120" width="600" height="120">
+  <rect fill="#1e293b" width="600" height="120"/>
+  <rect fill="#059669" x="20" y="20" width="560" height="50" rx="10" stroke="#10b981" stroke-width="2"/>
+  <text x="200" y="52" fill="white" font-family="Arial" font-size="16" font-weight="bold">🚀 Seed 10 Records (Batch)</text>
+  <path d="M 300 80 L 300 100 L 400 100" stroke="#10b981" stroke-width="2" fill="none"/>
+  <rect fill="#10b981" x="350" y="100" width="220" height="15" rx="4"/>
+  <text x="360" y="111" fill="#1e293b" font-family="Arial" font-size="9" font-weight="bold">Click để bắt đầu seed data</text>
+  <rect fill="#0f172a" x="20" y="85" width="300" height="25" rx="4"/>
+  <text x="35" y="102" fill="#10b981" font-family="Arial" font-size="10">✓ API configured</text>
+  <text x="140" y="102" fill="#10b981" font-family="Arial" font-size="10">✓ Logged in</text>
+  <text x="220" y="102" fill="#10b981" font-family="Arial" font-size="10">✓ Ready to seed</text>
+</svg>
+<p class="image-caption">Hình 14: Nút Seed sẵn sàng</p>
+</div>
+
+<h4>6.2 Quá trình Seed</h4>
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 180" width="600" height="180">
+  <rect fill="#1e293b" width="600" height="180"/>
+  <rect fill="#059669" x="20" y="20" width="560" height="50" rx="10"/>
+  <circle cx="60" cy="45" r="12" fill="none" stroke="#ffffff33" stroke-width="3"/>
+  <circle cx="60" cy="45" r="10" fill="none" stroke="white" stroke-width="3" stroke-dasharray="30 60"/>
+  <text x="200" y="52" fill="white" font-family="Arial" font-size="16" font-weight="bold">Seeding 5/10...</text>
+  <rect fill="#0f172a" x="20" y="85" width="560" height="20" rx="10"/>
+  <rect fill="#3b82f6" x="20" y="85" width="280" height="20" rx="10"/>
+  <text x="300" y="99" fill="white" font-family="Arial" font-size="11" text-anchor="middle">50%</text>
+  <rect fill="#1e3a5f" x="20" y="120" width="560" height="45" rx="8"/>
+  <text x="40" y="145" fill="#94a3b8" font-family="Arial" font-size="12">Progress: 5/10 records seeded</text>
+  <text x="40" y="160" fill="#64748b" font-family="Arial" font-size="10">Elapsed: 1.25s • Estimated remaining: 1.25s</text>
+</svg>
+<p class="image-caption">Hình 15: Progress khi seeding</p>
+</div>
+
+<ul>
+    <li>Hiển thị progress: <code>Seeding X/Y...</code></li>
+    <li>Progress bar cho thấy tiến độ</li>
+</ul>
+
+<h4>6.3 Kết quả</h4>
+
+<p><strong>Thành công:</strong></p>
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 150" width="600" height="150">
+  <rect fill="#1e293b" width="600" height="150"/>
+  <rect fill="#064e3b" x="20" y="20" width="560" height="60" rx="8" stroke="#10b981" stroke-width="2"/>
+  <circle fill="#10b981" cx="50" cy="50" r="15"/>
+  <text x="50" y="56" fill="white" font-family="Arial" font-size="16" text-anchor="middle">✓</text>
+  <text x="80" y="48" fill="#34d399" font-family="Arial" font-size="14" font-weight="bold">Success!</text>
+  <text x="80" y="65" fill="#94a3b8" font-family="Arial" font-size="12">Successfully seeded 10 records in 0.52s</text>
+  <rect fill="#064e3b" x="20" y="80" width="560" height="6" rx="3"/>
+  <rect fill="#10b981" x="20" y="80" width="560" height="6" rx="3"/>
+  <text x="20" y="110" fill="#64748b" font-family="Arial" font-size="11">Thông báo sẽ tự động biến mất sau 3 giây</text>
+</svg>
+<p class="image-caption">Hình 16: Thông báo thành công</p>
+</div>
+
+<p><strong>Thất bại:</strong></p>
+<div class="image-container">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 150" width="600" height="150">
+  <rect fill="#1e293b" width="600" height="150"/>
+  <rect fill="#7f1d1d" x="20" y="20" width="560" height="60" rx="8" stroke="#ef4444" stroke-width="2"/>
+  <circle fill="#ef4444" cx="50" cy="50" r="15"/>
+  <text x="50" y="56" fill="white" font-family="Arial" font-size="16" text-anchor="middle">!</text>
+  <text x="80" y="48" fill="#f87171" font-family="Arial" font-size="14" font-weight="bold">Error!</text>
+  <text x="80" y="65" fill="#94a3b8" font-family="Arial" font-size="12">Failed: 401 Unauthorized - Session expired</text>
+  <rect fill="#7f1d1d" x="20" y="80" width="560" height="6" rx="3"/>
+  <rect fill="#ef4444" x="20" y="80" width="560" height="6" rx="3"/>
+  <text x="20" y="110" fill="#64748b" font-family="Arial" font-size="11">Thông báo lỗi sẽ tự động biến mất sau 3 giây</text>
+  <rect fill="#1e293b" x="20" y="120" width="560" height="25" rx="4"/>
+  <text x="35" y="137" fill="#f59e0b" font-family="Arial" font-size="11">💡 Gợi ý: Vui lòng đăng nhập lại để tiếp tục</text>
+</svg>
+<p class="image-caption">Hình 17: Thông báo lỗi</p>
+</div>
+
+<p>Thông báo sẽ tự động biến mất sau 3 giây.</p>
+</div>
+
+<hr>
+
+<h2 id="tinh-nang">Các tính năng chính</h2>
+
+<div class="feature-box">
+<h3>1. Chọn Mode Fake Data</h3>
+<table>
+    <tr><th>Mode</th><th>Mô tả</th></tr>
+    <tr><td><strong>Auto</strong></td><td>Fake random cho mỗi record khi seed. Đối với các field ID reference đến bảng khác, sẽ random đến các ID có sẵn</td></tr>
+    <tr><td><strong>Fixed</strong></td><td>Nếu không muốn 1 field nào đó fake, có thể nhập manual, apply cho toàn bộ data sẽ seed</td></tr>
+    <tr><td><strong>NULL</strong></td><td>Field NULL cho tất cả record khi seed. <strong>Lưu ý</strong>: Required field không thể chọn NULL</td></tr>
+</table>
+</div>
+
+<div class="feature-box">
+<h3>2. Generate Preview</h3>
+<p>Nếu muốn chi tiết hơn, có thể generate preview và sửa manual từng field của mỗi record.</p>
+</div>
+
+<div class="feature-box">
+<h3>3. Chọn Mode Request</h3>
+<table>
+    <tr><th>Mode</th><th>Mô tả</th></tr>
+    <tr><td><strong>Batch</strong></td><td>Gửi số lượng lớn record</td></tr>
+    <tr><td><strong>Sequential</strong></td><td>Seed 1 record. Backend sẽ dùng cấu trúc dữ liệu dạng queue để buffer data lại, sau đó insert vào database khi đủ số lượng hoặc hết thời gian chờ</td></tr>
+    <tr><td><strong>Concurrent</strong></td><td>Giả lập số lượng lớn sequential request gọi đồng thời</td></tr>
+</table>
+</div>
+
+<hr>
+
+<h2 id="known-issues">Known Issues</h2>
+
+<ul>
+    <li>☐ Đối với các field ID reference đến bảng khác, thì sẽ random đến các ID có sẵn (chưa hoàn thiện)</li>
+    <li>☐ UX đăng nhập đang rất phèn</li>
+    <li>☐ Navigation đến các resource cần seed đang chưa có, cứ phải back ra homepage rồi vào lại rất chuối</li>
+</ul>
+
+<hr>
+
+<h2 id="technical-notes">Technical Notes</h2>
+
+<ul>
+    <li>Mỗi khi import <code>pkceAuthService</code> là lại tạo 1 instance mới, cần chuyển sang singleton toàn app.</li>
+    <li>Cần có cách để phân biệt record nào trong database do seed mà có
+        <ul>
+            <li>Ví dụ trong VDSEventData, có thể thêm đuôi <code>%-SEEDED</code> vào lanecode</li>
+        </ul>
+    </li>
+</ul>
+
+<hr>
+
+<p style="text-align: center; color: #94a3b8; font-size: 12px;">
+Document generated for VDS Seeder Project
+</p>
+
+</body>
+</html>
