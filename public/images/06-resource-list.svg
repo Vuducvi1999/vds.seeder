@@ -7,21 +7,35 @@
   <text x="70" y="38" fill="white" font-family="Arial" font-size="18" font-weight="bold">Data Seeder</text>
   <text x="70" y="58" fill="#94a3b8" font-family="Arial" font-size="12">Select a resource to seed data</text>
   
+  <!-- Settings button -->
+  <rect fill="#334155" x="1050" y="15" width="80" height="30" rx="6"/>
+  <text x="1060" y="35" fill="#cbd5e1" font-family="Arial" font-size="12">Cài đặt</text>
+  
+  <!-- Auth box (Logged in) -->
+  <rect fill="#064e3b" x="950" y="15" width="90" height="30" rx="6"/>
+  <circle fill="#10b981" cx="965" cy="30" r="6"/>
+  <text x="978" y="35" fill="#34d399" font-family="Arial" font-size="11">admin</text>
+  
+  <!-- Section: Hướng dẫn -->
+  <text x="40" y="95" fill="#94a3b8" font-family="Arial" font-size="11" font-weight="bold">Hướng dẫn</text>
+  <rect fill="#f59e0b" x="40" y="105" width="280" height="80" rx="8"/>
+  <rect fill="#f59e0b20" x="55" y="120" width="40" height="40" rx="8"/>
+  <text x="70" y="145" fill="#f59e0b" font-family="Arial" font-size="20">📖</text>
+  <text x="105" y="130" fill="white" font-family="Arial" font-size="14" font-weight="bold">Hướng dẫn sử dụng</text>
+  <text x="105" y="148" fill="#cbd5e1" font-family="Arial" font-size="11">Tìm hiểu cách sử dụng</text>
+  
+  <!-- Section: Resources -->
+  <text x="40" y="215" fill="#94a3b8" font-family="Arial" font-size="11" font-weight="bold">Resources</text>
+  
   <!-- Resource card (VDS Event - highlighted) -->
-  <rect fill="#334155" x="40" y="100" width="350" height="150" rx="12" stroke="#3b82f6" stroke-width="3"/>
+  <rect fill="#334155" x="40" y="225" width="350" height="120" rx="12" stroke="#3b82f6" stroke-width="2"/>
   
   <!-- Card content -->
-  <rect fill="#1e3a5f" x="60" y="120" width="50" height="50" rx="8"/>
-  <text x="75" y="150" fill="#60a5fa" font-family="Arial" font-size="24">📹</text>
+  <rect fill="#1e3a5f" x="55" y="240" width="40" height="40" rx="8"/>
+  <text x="67" y="265" fill="#60a5fa" font-family="Arial" font-size="18">📹</text>
   
-  <text x="130" y="145" fill="white" font-family="Arial" font-size="16" font-weight="bold">VDS Event</text>
-  <text x="130" y="165" fill="#94a3b8" font-family="Arial" font-size="12">Video Detection System Event Data</text>
+  <text x="105" y="255" fill="white" font-family="Arial" font-size="14" font-weight="bold">VDS Event</text>
+  <text x="105" y="270" fill="#94a3b8" font-family="Arial" font-size="11">Video Detection System Event Data</text>
   
-  <text x="280" y="225" fill="#3b82f6" font-family="Arial" font-size="11">Click to seed →</text>
-  
-  <!-- Annotation -->
-  <path d="M 215 250 L 215 290 L 180 290" stroke="#3b82f6" stroke-width="2" fill="none"/>
-  <rect fill="#3b82f6" x="60" y="290" width="180" height="50" rx="4"/>
-  <text x="70" y="308" fill="white" font-family="Arial" font-size="11" font-weight="bold">Chọn Resource</text>
-  <text x="70" y="322" fill="#bfdbfe" font-family="Arial" font-size="9">để bắt đầu seed</text>
+  <text x="280" y="325" fill="#3b82f6" font-family="Arial" font-size="10">Click to seed →</text>
 </svg>
