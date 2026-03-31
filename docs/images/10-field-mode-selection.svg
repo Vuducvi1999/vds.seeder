@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 300">
+  <rect fill="#1e293b" width="700" height="300"/>
+  
+  <!-- Title -->
+  <text x="20" y="35" fill="white" font-family="Arial" font-size="14" font-weight="bold">Field Generation Mode</text>
+  
+  <!-- Legend -->
+  <!-- Auto -->
+  <rect fill="#1e3a5f" x="20" y="50" width="200" height="35" rx="6"/>
+  <circle fill="#3b82f6" cx="40" cy="67" r="8"/>
+  <text x="55" y="72" fill="#60a5fa" font-family="Arial" font-size="12">Auto (Random)</text>
+  
+  <!-- Fixed -->
+  <rect fill="#064e3b" x="240" y="50" width="200" height="35" rx="6"/>
+  <circle fill="#10b981" cx="260" cy="67" r="8"/>
+  <text x="275" y="72" fill="#34d399" font-family="Arial" font-size="12">Fixed (Manual)</text>
+  
+  <!-- NULL -->
+  <rect fill="#334155" x="460" y="50" width="200" height="35" rx="6"/>
+  <circle fill="#6b7280" cx="480" cy="67" r="8"/>
+  <text x="495" y="72" fill="#9ca3af" font-family="Arial" font-size="12">NULL (Disabled)</text>
+  
+  <!-- Example field cards -->
+  <!-- Event Type - Auto -->
+  <rect fill="#1e3a5f" x="20" y="100" width="200" height="60" rx="8" stroke="#3b82f6" stroke-width="2"/>
+  <text x="35" y="125" fill="white" font-family="Arial" font-size="12">Event Type</text>
+  <text x="35" y="140" fill="#ef4444" font-family="Arial" font-size="10">*</text>
+  <circle fill="#3b82f6" cx="90" cy="150" r="6"/>
+  <text x="105" y="154" fill="#60a5fa" font-family="Arial" font-size="10">Auto</text>
+  
+  <!-- Source Type - Fixed -->
+  <rect fill="#064e3b" x="240" y="100" width="200" height="60" rx="8" stroke="#10b981" stroke-width="2"/>
+  <text x="255" y="125" fill="white" font-family="Arial" font-size="12">Source Type</text>
+  <text x="255" y="140" fill="#ef4444" font-family="Arial" font-size="10">*</text>
+  <circle fill="#10b981" cx="310" cy="150" r="6"/>
+  <text x="325" y="154" fill="#34d399" font-family="Arial" font-size="10">Fixed</text>
+  
+  <!-- Location - Auto -->
+  <rect fill="#1e3a5f" x="460" y="100" width="200" height="60" rx="8"/>
+  <text x="475" y="125" fill="white" font-family="Arial" font-size="12">Location</text>
+  <text x="475" y="140" fill="#ef4444" font-family="Arial" font-size="10">*</text>
+  <circle fill="#3b82f6" cx="530" cy="150" r="6"/>
+  <text x="545" y="154" fill="#60a5fa" font-family="Arial" font-size="10">Auto</text>
+  
+  <!-- Image Path - NULL -->
+  <rect fill="#334155" x="20" y="180" width="200" height="60" rx="8"/>
+  <text x="35" y="205" fill="white" font-family="Arial" font-size="12">Image Path</text>
+  <circle fill="#6b7280" cx="90" cy="230" r="6"/>
+  <text x="105" y="234" fill="#9ca3af" font-family="Arial" font-size="10">NULL</text>
+  
+  <!-- Description -->
+  <rect fill="#0f172a" x="20" y="260" width="660" height="30" rx="4"/>
+  <text x="35" y="280" fill="#94a3b8" font-family="Arial" font-size="11">• Auto: Random giá trị  • Fixed: Giá trị cố định cho tất cả  • NULL: Bỏ trống (required field không chọn được)</text>
+</svg>

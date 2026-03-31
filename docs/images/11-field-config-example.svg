@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 350">
+  <rect fill="#1e293b" width="700" height="350"/>
+  
+  <!-- Title -->
+  <text x="20" y="35" fill="white" font-family="Arial" font-size="14" font-weight="bold">Field Configuration Example</text>
+  
+  <!-- Field 1: Event Type - Auto -->
+  <rect fill="#1e3a5f" x="20" y="50" width="300" height="80" rx="8" stroke="#3b82f6" stroke-width="2"/>
+  <text x="35" y="75" fill="white" font-family="Arial" font-size="12">Event Type</text>
+  <text x="35" y="90" fill="#ef4444" font-family="Arial" font-size="10">*</text>
+  
+  <!-- Mode selector -->
+  <circle fill="#3b82f6" cx="60" cy="115" r="6"/>
+  <text x="75" y="119" fill="#60a5fa" font-family="Arial" font-size="10">Auto</text>
+  <circle fill="#475569" cx="120" cy="115" r="5"/>
+  <text x="135" y="119" fill="#9ca3af" font-family="Arial" font-size="10">Fixed</text>
+  <circle fill="#475569" cx="190" cy="115" r="5"/>
+  <text x="205" y="119" fill="#9ca3af" font-family="Arial" font-size="10">NULL</text>
+  
+  <!-- Label -->
+  <rect fill="#3b82f6" x="250" y="108" width="55" height="18" rx="4"/>
+  <text x="258" y="120" fill="white" font-family="Arial" font-size="9">random</text>
+  
+  <!-- Field 2: Source Type - Fixed -->
+  <rect fill="#064e3b" x="20" y="145" width="300" height="100" rx="8" stroke="#10b981" stroke-width="2"/>
+  <text x="35" y="170" fill="white" font-family="Arial" font-size="12">Source Type</text>
+  <text x="35" y="185" fill="#ef4444" font-family="Arial" font-size="10">*</text>
+  
+  <!-- Mode selector -->
+  <circle fill="#475569" cx="60" cy="210" r="5"/>
+  <text x="75" y="214" fill="#9ca3af" font-family="Arial" font-size="10">Auto</text>
+  <circle fill="#10b981" cx="120" cy="210" r="6"/>
+  <text x="135" y="214" fill="#34d399" font-family="Arial" font-size="10">Fixed</text>
+  <circle fill="#475569" cx="190" cy="210" r="5"/>
+  <text x="205" y="214" fill="#9ca3af" font-family="Arial" font-size="10">NULL</text>
+  
+  <!-- Manual input -->
+  <rect fill="#0f172a" x="35" y="225" width="260" height="15" rx="3"/>
+  <text x="45" y="236" fill="#34d399" font-family="Arial" font-size="9">1 - Camera</text>
+  
+  <!-- Field 3: Image Path - NULL -->
+  <rect fill="#334155" x="20" y="260" width="300" height="70" rx="8"/>
+  <text x="35" y="285" fill="white" font-family="Arial" font-size="12">Image Path</text>
+  
+  <!-- Mode selector -->
+  <circle fill="#475569" cx="60" cy="310" r="5"/>
+  <text x="75" y="314" fill="#9ca3af" font-family="Arial" font-size="10">Auto</text>
+  <circle fill="#475569" cx="120" cy="310" r="5"/>
+  <text x="135" y="314" fill="#9ca3af" font-family="Arial" font-size="10">Fixed</text>
+  <circle fill="#6b7280" cx="190" cy="310" r="6"/>
+  <text x="205" y="314" fill="#9ca3af" font-family="Arial" font-size="10">NULL</text>
+  
+  <!-- Summary box -->
+  <rect fill="#0f172a" x="340" y="50" width="340" height="280" rx="8"/>
+  <text x="360" y="80" fill="#94a3b8" font-family="Arial" font-size="12">Tổng kết cấu hình:</text>
+  
+  <rect fill="#1e3a5f" x="360" y="100" width="300" height="50" rx="4"/>
+  <text x="375" y="120" fill="#60a5fa" font-family="Arial" font-size="11">Event Type: Auto</text>
+  <text x="375" y="138" fill="#64748b" font-family="Arial" font-size="10">→ Random giá trị</text>
+  
+  <rect fill="#064e3b" x="360" y="160" width="300" height="50" rx="4"/>
+  <text x="375" y="180" fill="#34d399" font-family="Arial" font-size="11">Source Type: Fixed = 1</text>
+  <text x="375" y="198" fill="#64748b" font-family="Arial" font-size="10">→ Tất cả records = Camera</text>
+  
+  <rect fill="#334155" x="360" y="220" width="300" height="50" rx="4"/>
+  <text x="375" y="240" fill="#9ca3af" font-family="Arial" font-size="11">Image Path: NULL</text>
+  <text x="375" y="258" fill="#64748b" font-family="Arial" font-size="10">→ Bỏ trống tất cả</text>
+  
+  <text x="360" y="295" fill="#f59e0b" font-family="Arial" font-size="11">💡 Áp dụng cho TẤT CẢ records</text>
+</svg>

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600">
+  <rect fill="#1e293b" width="1200" height="600"/>
+  
+  <!-- Header -->
+  <rect fill="#0f172a" x="0" y="0" width="1200" height="60"/>
+  <rect fill="#3b82f6" x="20" y="12" width="40" height="36" rx="8"/>
+  <text x="70" y="38" fill="white" font-family="Arial" font-size="18" font-weight="bold">Data Seeder</text>
+  <text x="70" y="58" fill="#94a3b8" font-family="Arial" font-size="12">Select a resource to seed data</text>
+  
+  <!-- Resource card (VDS Event - highlighted) -->
+  <rect fill="#334155" x="40" y="100" width="350" height="150" rx="12" stroke="#3b82f6" stroke-width="3"/>
+  
+  <!-- Card content -->
+  <rect fill="#1e3a5f" x="60" y="120" width="50" height="50" rx="8"/>
+  <text x="75" y="150" fill="#60a5fa" font-family="Arial" font-size="24">📹</text>
+  
+  <text x="130" y="145" fill="white" font-family="Arial" font-size="16" font-weight="bold">VDS Event</text>
+  <text x="130" y="165" fill="#94a3b8" font-family="Arial" font-size="12">Video Detection System Event Data</text>
+  
+  <text x="280" y="225" fill="#3b82f6" font-family="Arial" font-size="11">Click to seed →</text>
+  
+  <!-- Annotation -->
+  <path d="M 215 250 L 215 290 L 180 290" stroke="#3b82f6" stroke-width="2" fill="none"/>
+  <rect fill="#3b82f6" x="60" y="290" width="180" height="50" rx="4"/>
+  <text x="70" y="308" fill="white" font-family="Arial" font-size="11" font-weight="bold">Chọn Resource</text>
+  <text x="70" y="322" fill="#bfdbfe" font-family="Arial" font-size="9">để bắt đầu seed</text>
+</svg>
