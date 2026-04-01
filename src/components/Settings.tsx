@@ -85,12 +85,12 @@ export default function Settings({ onClose }: SettingsProps) {
       const response = await fetch(discoveryUrl, { method: 'GET' });
 
       if (response.ok) {
-        setTestResult({ success: true, message: 'Connection successful' });
+        setTestResult({ success: true, message: 'Kết nối thành công' });
       } else {
-        setTestResult({ success: false, message: `Server returned ${response.status}` });
+        setTestResult({ success: false, message: `Máy chủ phản hồi mã ${response.status}` });
       }
     } catch {
-      setTestResult({ success: false, message: 'Connection failed' });
+      setTestResult({ success: false, message: 'Kết nối thất bại' });
     }
 
     setIsTesting(false);
@@ -126,9 +126,10 @@ export default function Settings({ onClose }: SettingsProps) {
         <div className="p-6 space-y-5 overflow-y-auto max-h-[60vh]">
           {/* Auth Server URL */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Auth Server URL <span className="text-red-400">*</span>
+            <label className="block text-sm font-medium text-slate-300 mb-1">
+              Địa chỉ máy chủ xác thực <span className="text-slate-500 font-normal">(Auth Server URL)</span> <span className="text-red-400">*</span>
             </label>
+            <p className="text-xs text-slate-500 mb-2">Dùng để tạo link đăng nhập. Thường là root URL của auth server.</p>
             <input
               type="text"
               value={authUrl}
@@ -140,9 +141,10 @@ export default function Settings({ onClose }: SettingsProps) {
 
           {/* Backend API URL */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              Backend API URL <span className="text-red-400">*</span>
+            <label className="block text-sm font-medium text-slate-300 mb-1">
+              Địa chỉ API backend <span className="text-slate-500 font-normal">(Backend API URL)</span> <span className="text-red-400">*</span>
             </label>
+            <p className="text-xs text-slate-500 mb-2">Địa chỉ API mà công cụ sẽ gọi để nạp dữ liệu.</p>
             <input
               type="text"
               value={backendApiUrl}
@@ -154,9 +156,10 @@ export default function Settings({ onClose }: SettingsProps) {
 
           {/* Client ID */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-slate-300 mb-1">
               Client ID <span className="text-red-400">*</span>
             </label>
+            <p className="text-xs text-slate-500 mb-2">ID đã đăng ký với auth server để nhận dạng ứng dụng này.</p>
             <input
               type="text"
               value={clientId}
@@ -168,9 +171,10 @@ export default function Settings({ onClose }: SettingsProps) {
 
           {/* Redirect URI */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-slate-300 mb-1">
               Redirect URI <span className="text-red-400">*</span>
             </label>
+            <p className="text-xs text-slate-500 mb-2">Auth server sẽ chuyển hướng về đây sau khi đăng nhập. Tự động điền theo địa chỉ hiện tại.</p>
             <input
               type="text"
               value={redirectUri}
@@ -181,9 +185,10 @@ export default function Settings({ onClose }: SettingsProps) {
 
           {/* Scopes */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-slate-300 mb-1">
               Scopes <span className="text-red-400">*</span>
             </label>
+            <p className="text-xs text-slate-500 mb-2">Chọn các quyền cần thiết. Thường chọn <code className="bg-slate-800 px-1 rounded text-blue-400">MonoTemplate</code>.</p>
             <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto bg-slate-900 border border-slate-600 rounded-xl p-3">
               {AVAILABLE_SCOPES.map((scope) => {
                 const isSelected = scopes.split(' ').includes(scope.value);
@@ -224,14 +229,14 @@ export default function Settings({ onClose }: SettingsProps) {
               {isTesting ? (
                 <>
                   <div className="w-4 h-4 rounded-full border-2 border-slate-500 border-t-white animate-spin"></div>
-                  Testing...
+                  Đang kiểm tra...
                 </>
               ) : (
                 <>
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
-                  Test Connection
+                  Kiểm tra kết nối
                 </>
               )}
             </button>
@@ -260,14 +265,14 @@ export default function Settings({ onClose }: SettingsProps) {
             onClick={onClose}
             className="flex-1 px-4 py-3 bg-slate-700 text-slate-300 rounded-xl hover:bg-slate-600 transition-all font-medium"
           >
-            Cancel
+            Huỷ
           </button>
           <button
             onClick={handleSave}
             disabled={!authUrl || !backendApiUrl || !clientId || !redirectUri}
             className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-500/20"
           >
-            Save Settings
+            Lưu cài đặt
           </button>
         </div>
       </div>

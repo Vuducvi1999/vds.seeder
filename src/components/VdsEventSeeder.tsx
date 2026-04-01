@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import * as Progress from '@radix-ui/react-progress';
-import { VDSEventType, VDSEventSourceType, VDSEventData } from '@/types/vds-event';
+import { VDSEventSourceType, VDSEventData } from '@/types/vds-event';
 import { apiService } from '@/lib/api';
 import { pkceAuthService } from '@/lib/auth-pkce';
 import { generateBatchData } from '@/lib/faker';
@@ -11,24 +11,11 @@ import Settings from '@/components/Settings';
 interface FieldConfig {
   name: keyof VDSEventData;
   label: string;
-  type: 'enum' | 'string' | 'number' | 'date' | 'uuid';
+  type: 'enum' | 'string' | 'number' | 'uuid';
   enumValues?: (string | number)[];
   enumLabels?: Map<number, string>;
   required: boolean;
 }
-
-const EVENT_TYPE_LABELS = new Map<number, string>([
-  [0, 'Unknown'],
-  [1, 'PPE Detection'],
-  [2, 'Restricted Area'],
-  [3, 'Abnormal Presence'],
-  [4, 'Identity Management'],
-  [5, 'Safety Monitoring'],
-  [6, 'Hazard Detection'],
-  [7, 'Camera Health'],
-  [8, 'Tracking'],
-  [9, 'Smart Search'],
-]);
 
 const SOURCE_TYPE_LABELS = new Map<number, string>([
   [0, 'Unknown'],
@@ -38,13 +25,14 @@ const SOURCE_TYPE_LABELS = new Map<number, string>([
 ]);
 
 const VDS_EVENT_FIELDS: FieldConfig[] = [
-  { name: 'eventType', label: 'Event Type', type: 'enum', enumValues: Object.values(VDSEventType).filter((v): v is number => typeof v === 'number'), enumLabels: EVENT_TYPE_LABELS, required: true },
+  { name: 'eventTypeId', label: 'Event Type ID', type: 'uuid', required: false },
   { name: 'sourceType', label: 'Source Type', type: 'enum', enumValues: Object.values(VDSEventSourceType).filter((v): v is number => typeof v === 'number'), enumLabels: SOURCE_TYPE_LABELS, required: true },
-  { name: 'deviceId', label: 'Device ID', type: 'uuid', required: true },
-  { name: 'occurDate', label: 'Occur Date', type: 'date', required: true },
-  { name: 'location', label: 'Location', type: 'string', required: true },
+  { name: 'vdsDeviceId', label: 'VDS Device ID', type: 'uuid', required: true },
+  { name: 'nodeId', label: 'Node ID', type: 'uuid', required: true },
   { name: 'laneCode', label: 'Lane Code', type: 'string', required: true },
-  { name: 'imagePath', label: 'Image Path', type: 'string', required: false },
+  { name: 'zoneCode', label: 'Zone Code', type: 'string', required: false },
+  { name: 'sourceReferenceId', label: 'Source Reference ID', type: 'uuid', required: true },
+  { name: 'imageUrl', label: 'Image URL', type: 'string', required: false },
   { name: 'confidence', label: 'Confidence', type: 'number', required: false },
 ];
 
@@ -59,6 +47,8 @@ interface FieldSetting {
 export default function VdsEventSeeder() {
   const [count, setCount] = useState(10);
   const [concurrentCount, setConcurrentCount] = useState(5);
+  const [sequentialBatchSize, setSequentialBatchSize] = useState(1000);
+  const [sequentialWaitSeconds, setSequentialWaitSeconds] = useState(60);
   const [seedMode, setSeedMode] = useState<SeedMode>('batch');
   const [fieldSettings, setFieldSettings] = useState<Record<string, FieldSetting>>({});
   const [previewData, setPreviewData] = useState<VDSEventData[]>([]);
@@ -155,9 +145,9 @@ export default function VdsEventSeeder() {
     }));
   };
 
-  const generateData = (): VDSEventData[] => {
+  const generateData = useCallback((): VDSEventData[] => {
     const configs = VDS_EVENT_FIELDS.map((field) => {
-      const setting = fieldSettings[field.name];
+      const setting = fieldSettings[field.name] ?? { mode: 'auto', manualValue: '' };
       return {
         fieldName: field.name,
         isAutoGenerate: setting.mode === 'auto',
@@ -166,25 +156,32 @@ export default function VdsEventSeeder() {
 
     const baseData: Partial<VDSEventData> = {};
     VDS_EVENT_FIELDS.forEach((field) => {
-      const setting = fieldSettings[field.name];
+      const setting = fieldSettings[field.name] ?? { mode: 'auto', manualValue: '' };
       if (setting.mode === 'manual' && setting.manualValue) {
         let value: string | number | null = setting.manualValue;
         if (field.type === 'number') {
           value = parseFloat(setting.manualValue) || 0;
         }
         (baseData as Record<string, unknown>)[field.name] = value;
+      } else if (setting.mode === 'disabled') {
+        (baseData as Record<string, unknown>)[field.name] = null;
       }
     });
 
     const recordCount = seedMode === 'sequential' ? 1 : (seedMode === 'concurrent' ? concurrentCount : count);
     return generateBatchData(recordCount, baseData, configs);
-  };
+  }, [fieldSettings, seedMode, concurrentCount, count]);
 
   const generatePreview = () => {
     const data = generateData();
     setPreviewData(data);
     setEditMode(true);
   };
+
+  useEffect(() => {
+    if (!editMode) return;
+    setPreviewData(generateData());
+  }, [editMode, generateData]);
 
   const updatePreviewData = (index: number, fieldName: string, value: string) => {
     setPreviewData((prev) => {
@@ -217,7 +214,7 @@ export default function VdsEventSeeder() {
 
     const data = dataToSeed || previewData;
     if (!data || data.length === 0) {
-      showResult(false, 'No data to seed');
+      showResult(false, 'Chưa có dữ liệu để Seed');
       return;
     }
 
@@ -228,6 +225,37 @@ export default function VdsEventSeeder() {
     const token = pkceAuthService.getAccessToken();
     if (token) {
       apiService.setToken(token);
+    }
+
+    // For sequential mode: update backend buffer settings first
+    if (seedMode === 'sequential') {
+      const applyBufferSetting = () =>
+        apiService.changeBufferingChannelSetting(sequentialBatchSize, sequentialWaitSeconds);
+
+      let bufferResult = await applyBufferSetting();
+
+      if (!bufferResult.success) {
+        if (bufferResult.error === '401') {
+          const refreshed = await pkceAuthService.refreshAccessToken();
+          if (refreshed) {
+            apiService.setToken(pkceAuthService.getAccessToken() || '');
+            bufferResult = await applyBufferSetting();
+          }
+        }
+        if (!bufferResult.success) {
+          if (bufferResult.error === '401') {
+            showResult(false, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+            setIsAuthenticated(false);
+            setUser(null);
+            handleLogin();
+          } else {
+            showResult(false, `Không thể cập nhật cấu hình buffer: ${bufferResult.error}`);
+          }
+          setIsLoading(false);
+          setProgress(null);
+          return;
+        }
+      }
     }
 
     const seedWithProgress = async (): Promise<{ success: boolean; count: number; error?: string }> => {
@@ -254,22 +282,22 @@ export default function VdsEventSeeder() {
     };
 
     if (!response.success) {
-      if (response.error?.includes('401') || response.error?.includes('Unauthorized')) {
+      if (response.error?.includes('401') || response.error?.includes('Không có quyền')) {
         const refreshed = await pkceAuthService.refreshAccessToken();
         if (refreshed) {
           apiService.setToken(pkceAuthService.getAccessToken() || '');
           const retryResponse = await seedWithProgress();
           if (retryResponse.success) {
             const message = retryResponse.error 
-              ? `Seeded ${retryResponse.count}/${data.length} records in ${formatDuration(duration)} (${retryResponse.error})`
-              : `Successfully seeded ${retryResponse.count} records in ${formatDuration(duration)}`;
+              ? `Đã Seed ${retryResponse.count}/${data.length} record trong ${formatDuration(duration)} (${retryResponse.error})`
+              : `Seed thành công ${retryResponse.count} record trong ${formatDuration(duration)}`;
             showResult(true, message);
             setIsLoading(false);
             setProgress(null);
             return;
           }
         }
-        showResult(false, 'Session expired. Please login again.');
+        showResult(false, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
         setIsAuthenticated(false);
         setUser(null);
         handleLogin();
@@ -277,15 +305,15 @@ export default function VdsEventSeeder() {
         setProgress(null);
         return;
       }
-      showResult(false, `Failed: ${response.error}`);
+      showResult(false, `Seed thất bại: ${response.error}`);
       setIsLoading(false);
       setProgress(null);
       return;
     }
 
     const message = response.error 
-      ? `Seeded ${response.count}/${data.length} records in ${formatDuration(duration)} (${response.error})`
-      : `Successfully seeded ${response.count} records in ${formatDuration(duration)}`;
+      ? `Đã Seed ${response.count}/${data.length} record trong ${formatDuration(duration)} (${response.error})`
+      : `Seed thành công ${response.count} record trong ${formatDuration(duration)}`;
     showResult(true, message);
     setPreviewData([]);
     setEditMode(false);
@@ -306,7 +334,7 @@ export default function VdsEventSeeder() {
             <div className="w-12 h-12 rounded-full border-4 border-blue-500/20"></div>
             <div className="absolute inset-0 w-12 h-12 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
           </div>
-          <p className="text-slate-400 text-sm">Loading...</p>
+          <p className="text-slate-400 text-sm">Đang tải...</p>
         </div>
       </div>
     );
@@ -337,7 +365,7 @@ export default function VdsEventSeeder() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
                   </svg>
                 </div>
-                <h1 className="text-xl font-bold text-white">Data Seeder</h1>
+                <h1 className="text-xl font-bold text-white">Công cụ nạp dữ liệu mẫu</h1>
               </a>
 
               <div className="flex items-center gap-3">
@@ -396,14 +424,14 @@ export default function VdsEventSeeder() {
                   </svg>
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-white">Configuration</h2>
-                  <p className="text-sm text-slate-400">Set number of records and configure each field</p>
+                  <h2 className="text-lg font-semibold text-white">Cấu hình</h2>
+                  <p className="text-sm text-slate-400">Thiết lập số lượng bản ghi và cấu hình từng trường dữ liệu</p>
                 </div>
               </div>
 
               {/* Seed Mode */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-slate-300 mb-2">Seed Mode</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Cách gửi dữ liệu</label>
                 <div className="flex gap-2">
                   <button
                     onClick={() => { setSeedMode('batch'); setPreviewData([]); setEditMode(false); }}
@@ -447,17 +475,75 @@ export default function VdsEventSeeder() {
                 </div>
                 <p className="text-xs text-slate-500 mt-1">
                   {seedMode === 'batch' 
-                    ? 'Sends all records in a single request' 
+                    ? 'Gửi tất cả record trong một request' 
                     : seedMode === 'sequential'
-                    ? 'Sends records one by one (/sequence endpoint)'
-                    : 'Sends multiple requests concurrently (/sequence endpoint)'}
+                    ? 'Gửi từng record một (endpoint /sequence)'
+                    : 'Gửi nhiều request đồng thời (endpoint /sequence)'}
                 </p>
               </div>
+
+              {/* Sequential Buffer Settings */}
+              {seedMode === 'sequential' && (
+                <div className="mb-4 p-3 bg-slate-800/30 rounded-lg border border-slate-700/30">
+                  <div className="mb-2">
+                    <label className="block text-sm font-medium text-slate-300">Cấu hình buffer backend</label>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Các giá trị này được gửi lên backend trước khi bắt đầu Seed. Chúng điều chỉnh cách backend gom và flush record — không ảnh hưởng tới dữ liệu Preview. Nếu không chắc, cứ để mặc định.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-4">
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">
+                        Số record mỗi lô <span className="text-slate-500">(backend gom đủ số này thì flush)</span>
+                      </label>
+                      <div className="relative w-[140px]">
+                        <input
+                          type="number"
+                          value={sequentialBatchSize}
+                          onChange={(e) => setSequentialBatchSize(Math.max(1, parseInt(e.target.value) || 1))}
+                          min={1}
+                          className="w-full px-3 py-2 pr-14 bg-slate-900/50 border border-slate-600 rounded-lg text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        />
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-0.5">
+                          <button onClick={() => setSequentialBatchSize(Math.max(1, sequentialBatchSize - 1))} className="p-1 rounded bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-all">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
+                          </button>
+                          <button onClick={() => setSequentialBatchSize(sequentialBatchSize + 1)} className="p-1 rounded bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-all">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-1">
+                        Thời gian chờ tối đa <span className="text-slate-500">(giây — backend flush lô chưa đầy sau thời gian này)</span>
+                      </label>
+                      <div className="relative w-[140px]">
+                        <input
+                          type="number"
+                          value={sequentialWaitSeconds}
+                          onChange={(e) => setSequentialWaitSeconds(Math.max(1, parseInt(e.target.value) || 1))}
+                          min={1}
+                          className="w-full px-3 py-2 pr-14 bg-slate-900/50 border border-slate-600 rounded-lg text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        />
+                        <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-0.5">
+                          <button onClick={() => setSequentialWaitSeconds(Math.max(1, sequentialWaitSeconds - 1))} className="p-1 rounded bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-all">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
+                          </button>
+                          <button onClick={() => setSequentialWaitSeconds(sequentialWaitSeconds + 1)} className="p-1 rounded bg-slate-700 text-slate-400 hover:text-white hover:bg-slate-600 transition-all">
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Seed Config */}
               {seedMode === 'batch' && (
                 <div className="mb-4 p-3 bg-slate-800/30 rounded-lg border border-slate-700/30">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Seed Config</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Số lượng record</label>
                   <div className="flex items-center gap-2">
                     <div className="relative w-[120px]">
                       <input
@@ -476,7 +562,7 @@ export default function VdsEventSeeder() {
                         </button>
                       </div>
                     </div>
-                    <span className="text-xs text-slate-500">Number of records to generate</span>
+                    <span className="text-xs text-slate-500">Số record cần tạo</span>
                   </div>
                 </div>
               )}
@@ -484,7 +570,7 @@ export default function VdsEventSeeder() {
               {/* Concurrent Config */}
               {seedMode === 'concurrent' && (
                 <div className="mb-4 p-3 bg-slate-800/30 rounded-lg border border-slate-700/30">
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Concurrent Requests</label>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Số request song song</label>
                   <div className="flex items-center gap-2">
                     <div className="relative w-[120px]">
                       <input
@@ -503,14 +589,14 @@ export default function VdsEventSeeder() {
                         </button>
                       </div>
                     </div>
-                    <span className="text-xs text-slate-500">requests will be sent in parallel</span>
+                    <span className="text-xs text-slate-500">request sẽ được gửi đồng thời (Concurrent)</span>
                   </div>
                 </div>
               )}
 
               {/* Field Cards */}
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Field Generation Mode</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Cách tạo dữ liệu cho từng trường</label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {VDS_EVENT_FIELDS.map((field) => {
                     const setting = fieldSettings[field.name] || { mode: 'auto', manualValue: '' };
@@ -563,17 +649,17 @@ export default function VdsEventSeeder() {
                               onChange={(e) => updateFieldSetting(field.name, { manualValue: e.target.value })}
                               className="w-full px-2 py-1 bg-slate-900/50 border border-slate-600/50 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 mt-1"
                             >
-                              <option value="">Select {field.label}...</option>
+                              <option value="">Chọn {field.label}...</option>
                               {field.enumValues?.map((val) => (
                                 <option key={val} value={val}>{field.enumLabels?.get(val as number) || val}</option>
                               ))}
                             </select>
                           ) : (
                             <input
-                              type={field.type === 'number' ? 'number' : field.type === 'date' ? 'datetime-local' : 'text'}
+                              type={field.type === 'number' ? 'number' : 'text'}
                               value={setting.manualValue}
                               onChange={(e) => updateFieldSetting(field.name, { manualValue: e.target.value })}
-                              placeholder={`Enter ${field.label.toLowerCase()}`}
+                              placeholder={`Nhập giá trị...`}
                               className="w-full px-2 py-1 bg-slate-900/50 border border-slate-600/50 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 mt-1"
                             />
                           )
@@ -594,7 +680,7 @@ export default function VdsEventSeeder() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                   </svg>
-                  Generate Preview
+                  Tạo Preview
                 </button>
                 {editMode && (
                   <button
@@ -604,7 +690,7 @@ export default function VdsEventSeeder() {
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                    Clear
+                    Xóa Preview
                   </button>
                 )}
               </div>
@@ -623,8 +709,8 @@ export default function VdsEventSeeder() {
                       </svg>
                     </div>
                     <div>
-                      <h2 className="text-base font-semibold text-white">Data Preview</h2>
-                      <p className="text-xs text-slate-400">Click cells to edit • {previewData.length} records</p>
+                      <h2 className="text-base font-semibold text-white">Preview</h2>
+                      <p className="text-xs text-slate-400">Nhấn vào ô để chỉnh sửa • {previewData.length} record</p>
                     </div>
                   </div>
                 </div>
@@ -669,13 +755,6 @@ export default function VdsEventSeeder() {
                                       <option key={val} value={val}>{field.enumLabels?.get(val as number) || val}</option>
                                     ))}
                                   </select>
-                                ) : field.type === 'date' ? (
-                                  <input
-                                    type="datetime-local"
-                                    value={data[field.name] ? (data[field.name] as string).slice(0, 16) : ''}
-                                    onChange={(e) => updatePreviewData(idx, field.name, new Date(e.target.value).toISOString())}
-                                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                                  />
                                 ) : (
                                   <input
                                     type={field.type === 'number' ? 'number' : 'text'}
@@ -685,14 +764,16 @@ export default function VdsEventSeeder() {
                                   />
                                 )
                               ) : (
-                                <div className="px-3 py-2 text-sm text-slate-400 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                                  {fieldSettings[field.name]?.mode === 'manual'
-                                    ? (field.type === 'enum' && field.enumLabels 
+                                <div className="px-3 py-2 text-sm bg-slate-900/50 rounded-lg border border-slate-700/50">
+                                  {fieldSettings[field.name]?.mode === 'disabled'
+                                    ? <span className="text-slate-500 italic">null</span>
+                                    : fieldSettings[field.name]?.mode === 'manual'
+                                    ? <span className="text-slate-400">{field.type === 'enum' && field.enumLabels 
                                         ? field.enumLabels.get(Number(fieldSettings[field.name]?.manualValue)) || fieldSettings[field.name]?.manualValue || '-'
-                                        : fieldSettings[field.name]?.manualValue || '-')
-                                    : (field.type === 'enum' && field.enumLabels
+                                        : fieldSettings[field.name]?.manualValue || '-'}</span>
+                                    : <span className="text-slate-400">{field.type === 'enum' && field.enumLabels
                                         ? field.enumLabels.get(data[field.name] as number) || data[field.name]?.toString() || '-'
-                                        : data[field.name]?.toString() || '-')
+                                        : data[field.name]?.toString() || '-'}</span>
                                   }
                                 </div>
                               )}
@@ -726,16 +807,16 @@ export default function VdsEventSeeder() {
                 {isLoading ? (
                   <>
                     <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>
-                    {progress ? `Seeding ${progress.current}/${progress.total}...` : 'Seeding...'}
+                    {progress ? `Đang Seed ${progress.current}/${progress.total} record...` : 'Đang Seed...'}
                   </>
                 ) : !pkceAuthService.getConfig() ? (
-                  'Configure API in Settings'
+                  'Cần cấu hình API trước — vào Settings'
                 ) : !isAuthenticated ? (
                   <>
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                     </svg>
-                    Login to Seed Data
+                    Login để bắt đầu Seed
                   </>
                 ) : (
                   <>
@@ -743,10 +824,10 @@ export default function VdsEventSeeder() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                     </svg>
                     {seedMode === 'sequential' 
-                      ? 'Seed Record (Sequential)' 
+                      ? 'Seed 1 record (Sequential)' 
                       : seedMode === 'concurrent'
-                      ? `Seed ${concurrentCount} Records (Concurrent)`
-                      : `Seed ${count} Records (Batch)`}
+                      ? `Seed ${concurrentCount} record (Concurrent)`
+                      : `Seed ${count} record (Batch)`}
                   </>
                 )}
               </button>

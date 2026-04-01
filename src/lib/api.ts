@@ -36,7 +36,7 @@ class ApiService {
 
   async seedVdsEventData(data: VDSEventData[]): Promise<{ success: boolean; count: number; error?: string }> {
     if (!this.config.baseUrl) {
-      return { success: false, count: 0, error: 'API URL not configured' };
+      return { success: false, count: 0, error: 'Chưa cấu hình API URL' };
     }
 
     try {
@@ -50,11 +50,11 @@ class ApiService {
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          return { success: false, count: 0, error: 'Unauthorized - Please login again' };
+          return { success: false, count: 0, error: 'Không có quyền truy cập — vui lòng đăng nhập lại' };
         }
         return { success: false, count: 0, error: error.message };
       }
-      const message = error instanceof Error ? error.message : 'Failed to connect to API';
+      const message = error instanceof Error ? error.message : 'Không thể kết nối tới API';
       return { success: false, count: 0, error: message };
     }
   }
@@ -64,7 +64,7 @@ class ApiService {
     onProgress?: (current: number, total: number) => void
   ): Promise<{ success: boolean; count: number; error?: string }> {
     if (!this.config.baseUrl) {
-      return { success: false, count: 0, error: 'API URL not configured' };
+      return { success: false, count: 0, error: 'Chưa cấu hình API URL' };
     }
 
     let successCount = 0;
@@ -81,21 +81,21 @@ class ApiService {
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
           if (error.response?.status === 401) {
-            return { success: false, count: successCount, error: 'Unauthorized - Please login again' };
+            return { success: false, count: successCount, error: 'Không có quyền truy cập — vui lòng đăng nhập lại' };
           }
           lastError = error.message;
         } else {
-          lastError = error instanceof Error ? error.message : 'Failed to seed record';
+          lastError = error instanceof Error ? error.message : 'Không thể Seed record này';
         }
       }
       onProgress?.(i + 1, data.length);
     }
 
     if (successCount === 0) {
-      return { success: false, count: 0, error: lastError || 'All records failed' };
+      return { success: false, count: 0, error: lastError || 'Tất cả record đều thất bại' };
     }
 
-    return { success: true, count: successCount, error: successCount < data.length ? `Partial: ${successCount}/${data.length}` : undefined };
+    return { success: true, count: successCount, error: successCount < data.length ? `Một phần: ${successCount}/${data.length} record thành công` : undefined };
   }
 
   async seedVdsEventDataConcurrent(
@@ -104,7 +104,7 @@ class ApiService {
     onProgress?: (current: number, total: number) => void
   ): Promise<{ success: boolean; count: number; error?: string }> {
     if (!this.config.baseUrl) {
-      return { success: false, count: 0, error: 'API URL not configured' };
+      return { success: false, count: 0, error: 'Chưa cấu hình API URL' };
     }
 
     let successCount = 0;
@@ -124,7 +124,7 @@ class ApiService {
         if (axios.isAxiosError(error)) {
           errors.push(error.message);
         } else {
-          errors.push(error instanceof Error ? error.message : 'Failed to seed record');
+          errors.push(error instanceof Error ? error.message : 'Không thể Seed record này');
         }
       } finally {
         completedCount++;
@@ -139,19 +139,46 @@ class ApiService {
     }
 
     if (successCount === 0) {
-      return { success: false, count: 0, error: errors[0] || 'All records failed' };
+      return { success: false, count: 0, error: errors[0] || 'Tất cả record đều thất bại' };
     }
 
     return { 
       success: true, 
       count: successCount, 
-      error: successCount < total ? `Partial: ${successCount}/${total}` : undefined 
+      error: successCount < total ? `Một phần: ${successCount}/${total} record thành công` : undefined 
     };
+  }
+
+  async changeBufferingChannelSetting(batchSize: number, seconds: number): Promise<{ success: boolean; error?: string }> {
+    if (!this.config.baseUrl) {
+      return { success: false, error: 'Chưa cấu hình API URL' };
+    }
+
+    try {
+      await axios.post(
+        `${this.config.baseUrl}/api/itd/vds/buffering-channel/change-setting`,
+        null,
+        {
+          headers: this.getHeaders(),
+          params: { batchSize, seconds },
+        }
+      );
+      return { success: true };
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          return { success: false, error: '401' };
+        }
+        return { success: false, error: error.message };
+      }
+      const message = error instanceof Error ? error.message : 'Không thể cập nhật cấu hình buffer';
+      return { success: false, error: message };
+    }
   }
 
   async testConnection(): Promise<{ success: boolean; message: string }> {
     if (!this.config.baseUrl) {
-      return { success: false, message: 'API URL not configured' };
+      return { success: false, message: 'Chưa cấu hình API URL' };
     }
 
     try {
@@ -159,17 +186,17 @@ class ApiService {
         headers: this.getHeaders(),
         timeout: 5000,
       });
-      return { success: true, message: 'Connection successful' };
+      return { success: true, message: 'Kết nối thành công' };
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
-          return { success: true, message: 'Connection successful (requires auth)' };
+          return { success: true, message: 'Kết nối thành công' };
         }
         if (error.response?.status === 405) {
-          return { success: true, message: 'Connection successful' };
+          return { success: true, message: 'Kết nối thành công' };
         }
       }
-      const message = error instanceof Error ? error.message : 'Connection failed';
+      const message = error instanceof Error ? error.message : 'Kết nối thất bại';
       return { success: false, message };
     }
   }

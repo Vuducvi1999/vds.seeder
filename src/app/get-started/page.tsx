@@ -79,7 +79,7 @@ export default function GetStartedPage() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">Data Seeder</h1>
+                <h1 className="text-xl font-bold text-white">Công cụ nạp dữ liệu mẫu</h1>
                 <p className="text-sm text-slate-400">Hướng dẫn sử dụng</p>
               </div>
             </div>
@@ -101,11 +101,11 @@ export default function GetStartedPage() {
             <span className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
               <span className="text-amber-400 text-xl">📋</span>
             </span>
-            Requirements
+            Thông tin cần chuẩn bị
           </h2>
           
           <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 mb-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Auth Server Information</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">Thông tin máy chủ xác thực</h3>
             <ul className="space-y-2 text-slate-300">
               <li className="flex items-start gap-2">
                 <span className="text-blue-400">•</span>
@@ -135,7 +135,7 @@ export default function GetStartedPage() {
           </div>
 
           <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 mb-6">
-            <h3 className="text-lg font-semibold text-white mb-4">Backend Server Information</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">Thông tin máy chủ API backend</h3>
             <ul className="space-y-2 text-slate-300">
               <li className="flex items-start gap-2">
                 <span className="text-blue-400">•</span>
@@ -164,15 +164,15 @@ export default function GetStartedPage() {
             <p className="text-slate-400 mb-4">Trước khi bắt đầu, cần cấu hình thông tin Auth Server và Backend API.</p>
             
             <SubStep title="Cách mở Settings">
-              <p className="text-slate-300 mb-3">Click vào icon <strong>Settings</strong> (hình bánh răng) ở góc phải header</p>
+              <p className="text-slate-300 mb-3">Nhấn vào icon <strong>Settings</strong> (hình bánh răng) ở góc phải header</p>
             </SubStep>
 
             <SubStep title="Các trường cần điền">
               <FeatureTable
                 headers={['Trường', 'Mô tả', 'Ví dụ']}
                 rows={[
-                  { cells: ['Auth Server URL', 'URL của auth server', 'http://localhost:7001/'] },
-                  { cells: ['Backend API URL', 'URL của backend API', 'http://localhost:7001/'] },
+                  { cells: ['Địa chỉ máy chủ xác thực', 'URL của auth server', 'http://localhost:7001/'] },
+                  { cells: ['Địa chỉ API backend', 'URL của backend API', 'http://localhost:7001/'] },
                   { cells: ['Client ID', 'ID đã đăng ký với auth', 'SeedingTool'] },
                   { cells: ['Redirect URI', 'URL callback (tự động điền)', 'http://localhost:3000/callback'] },
                   { cells: ['Scopes', 'Quyền truy cập', 'MonoTemplate'] },
@@ -181,15 +181,15 @@ export default function GetStartedPage() {
             </SubStep>
 
             <SubStep title="Kiểm tra kết nối">
-              <p className="text-slate-300 mb-3">Click <strong>Test Connection</strong> để xác nhận kết nối thành công</p>
+              <p className="text-slate-300 mb-3">Nhấn <strong>Kiểm tra kết nối</strong> để xác nhận kết nối thành công</p>
             </SubStep>
 
             <InfoBox type="success">
-              Click <strong>Save Settings</strong> để lưu lại cấu hình.
+              Nhấn <strong>Lưu cài đặt</strong> để lưu lại cấu hình.
             </InfoBox>
           </Step>
 
-          <Step number="2" title="Đăng nhập">
+          <Step number="2" title="Login">
             <p className="text-slate-400 mb-4">Sau khi cấu hình xong, hệ thống yêu cầu đăng nhập qua Auth Server.</p>
             
             <ul className="space-y-2 text-slate-300">
@@ -207,111 +207,125 @@ export default function GetStartedPage() {
               </li>
             </ul>
 
-            <InfoBox type="success" className="mt-4">
-              Khi đã đăng nhập, sẽ hiển thị thông tin user (username/email) và nút <strong>Logout</strong> để đăng xuất.
+            <InfoBox type="success">
+              Khi đã Login, sẽ hiển thị thông tin user (username/email) và nút <strong>Logout</strong> để đăng xuất.
             </InfoBox>
           </Step>
 
-          <Step number="3" title="Chọn Resource cần Seed">
-            <p className="text-slate-400 mb-4">Từ trang chủ, chọn resource muốn seed data.</p>
+          <Step number="3" title="Chọn loại dữ liệu cần Seed">
+            <p className="text-slate-400 mb-4">Từ trang chủ, chọn loại dữ liệu muốn Seed.</p>
             
             <FeatureTable
-              headers={['Resource', 'Mô tả']}
+              headers={['Loại dữ liệu', 'Mô tả']}
               rows={[
-                { cells: ['VDS Event', 'Video Detection System Event Data'], highlight: true },
+                { cells: ['VDS Event', 'Dữ liệu sự kiện từ hệ thống phát hiện phương tiện (VDS)'], highlight: true },
               ]}
             />
 
-            <p className="text-slate-300">Click vào card của resource cần seed → Hệ thống sẽ chuyển sang trang seed tương ứng</p>
+            <p className="text-slate-300">Nhấn vào card của loại dữ liệu cần Seed → Hệ thống sẽ chuyển sang trang Seed tương ứng</p>
           </Step>
 
-          <Step number="4" title="Cấu hình chế độ Seed">
-            <SubStep title="4.1 Chọn Seed Mode (Request Mode)">
+          <Step number="4" title="Cấu hình cách gửi dữ liệu">
+            <SubStep title="4.1 Chọn cách gửi dữ liệu">
               <FeatureTable
-                headers={['Mode', 'Mô tả']}
+                headers={['Chế độ', 'Mô tả']}
                 rows={[
-                  { cells: ['Batch', 'Gửi tất cả records trong 1 request'], highlight: true },
-                  { cells: ['Sequential', 'Gửi từng record một (/sequence endpoint)'] },
-                  { cells: ['Concurrent', 'Gửi nhiều requests đồng thời (/sequence endpoint)'] },
+                  { cells: ['Batch', 'Gửi tất cả record trong 1 request'], highlight: true },
+                  { cells: ['Sequential', 'Gửi từng record một (endpoint /sequence)'] },
+                  { cells: ['Concurrent', 'Gửi nhiều request đồng thời (endpoint /sequence)'] },
                 ]}
               />
             </SubStep>
 
-            <SubStep title="4.2 Cấu hình số lượng Record">
+            <SubStep title="4.2 Cấu hình số lượng record">
               <ul className="space-y-2 text-slate-300">
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
-                  <div><strong>Batch Mode:</strong> Nhập số records cần tạo</div>
+                  <div><strong>Batch:</strong> Nhập số record cần tạo</div>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
-                  <div><strong>Concurrent Mode:</strong> Nhập số requests gửi đồng thời</div>
+                  <div><strong>Concurrent:</strong> Nhập số request gửi đồng thời</div>
                 </li>
               </ul>
             </SubStep>
 
-            <SubStep title="4.3 Cấu hình Field Generation Mode">
-              <p className="text-slate-300 mb-4">Mỗi field có 3 chế độ:</p>
+            <SubStep title="4.3 Cấu hình buffer backend (chế độ Sequential)">
+              <p className="text-slate-300 mb-3">Khi chọn <strong>Sequential</strong>, một panel cấu hình buffer backend sẽ hiện ra. Các giá trị này được gửi lên backend trước khi bắt đầu Seed:</p>
               <FeatureTable
-                headers={['Mode', 'Màu', 'Mô tả']}
+                headers={['Trường', 'Mặc định', 'Ý nghĩa']}
                 rows={[
-                  { cells: ['Auto', '🔵 Xanh dương', 'Fake random cho mỗi record'], highlight: true },
-                  { cells: ['Fixed', '🟢 Xanh lá', 'Giá trị cố định (nhập manual)'] },
-                  { cells: ['NULL', '⚪ Xám', 'Để NULL cho tất cả records'] },
+                  { cells: ['Số record mỗi lô', '1000', 'Backend gom đủ số này thì flush vào database'], highlight: true },
+                  { cells: ['Thời gian chờ tối đa', '60 giây', 'Backend flush lô chưa đầy sau khoảng thời gian này'] },
+                ]}
+              />
+              <InfoBox type="info">
+                Nếu không chắc nên đặt giá trị bao nhiêu, cứ để mặc định — đó là cấu hình chuẩn backend đang dùng.
+              </InfoBox>
+            </SubStep>
+
+            <SubStep title="4.4 Cách tạo dữ liệu cho từng trường">
+              <p className="text-slate-300 mb-4">Mỗi trường có 3 chế độ:</p>
+              <FeatureTable
+                headers={['Chế độ', 'Màu', 'Mô tả']}
+                rows={[
+                  { cells: ['Auto', '🔵 Xanh dương', 'Tự tạo ngẫu nhiên cho mỗi record'], highlight: true },
+                  { cells: ['Fixed', '🟢 Xanh lá', 'Dùng một giá trị cố định do bạn nhập'] },
+                  { cells: ['NULL', '⚪ Xám', 'Trường này sẽ là NULL cho tất cả record'] },
                 ]}
               />
 
               <InfoBox type="warning">
-                <strong>Lưu ý:</strong> Required field không thể chọn NULL
+                <strong>Lưu ý:</strong> Trường bắt buộc (có dấu *) không thể chọn NULL
               </InfoBox>
 
               <div className="bg-slate-900/50 rounded-lg p-4 border border-slate-700/50 mt-4">
-                <h4 className="text-white font-medium mb-3">Ví dụ cấu hình Field:</h4>
+                <h4 className="text-white font-medium mb-3">Ví dụ cấu hình:</h4>
                 <ul className="space-y-1 text-slate-300 text-sm">
-                  <li>• <strong>Event Type:</strong> Auto (random)</li>
+                  <li>• <strong>Event Type ID:</strong> Auto (UUID ngẫu nhiên) hoặc NULL</li>
                   <li>• <strong>Source Type:</strong> Fixed = <code className="bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">1</code> (Camera)</li>
-                  <li>• <strong>Image Path:</strong> NULL (không bắt buộc)</li>
+                  <li>• <strong>Image URL:</strong> NULL nếu không cần</li>
                 </ul>
               </div>
             </SubStep>
           </Step>
 
-          <Step number="5" title="Generate & Preview Data">
-            <SubStep title="5.1 Generate Preview">
-              <p className="text-slate-300 mb-3">Click <strong className="text-blue-400">Generate Preview</strong> để xem trước data trước khi seed.</p>
+          <Step number="5" title="Tạo Preview">
+            <SubStep title="5.1 Tạo dữ liệu Preview">
+              <p className="text-slate-300 mb-3">Nhấn <strong className="text-blue-400">Tạo Preview</strong> để xem trước dữ liệu trước khi Seed. Bảng Preview tự động cập nhật mỗi khi bạn thay đổi cấu hình trường.</p>
             </SubStep>
 
-            <SubStep title="5.2 Xem & Chỉnh sửa Preview">
+            <SubStep title="5.2 Xem và chỉnh sửa">
               <ul className="space-y-2 text-slate-300">
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
-                  Hiển thị tất cả records dưới dạng bảng
+                  Hiển thị tất cả record dưới dạng bảng
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
-                  Click vào ô để chỉnh sửa giá trị (chỉ fields ở chế độ <strong className="text-blue-400">Auto</strong> mới sửa được)
+                  Nhấn vào ô để chỉnh sửa giá trị (chỉ trường ở chế độ <strong className="text-blue-400">Auto</strong> mới sửa được)
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
-                  Fields ở chế độ Fixed/NULL hiển thị disabled
+                  Trường ở chế độ Fixed hoặc NULL hiển thị ở dạng chỉ đọc
                 </li>
               </ul>
             </SubStep>
 
             <SubStep title="5.3 Xóa Preview">
-              <p className="text-slate-300">Click <strong>Clear</strong> để xóa preview và quay lại chế độ cấu hình.</p>
+              <p className="text-slate-300">Nhấn <strong>Xóa Preview</strong> để xóa bảng Preview và quay lại chế độ cấu hình.</p>
             </SubStep>
           </Step>
 
-          <Step number="6" title="Seed Data">
+          <Step number="6" title="Seed">
             <SubStep title="6.1 Chuẩn bị Seed">
-              <p className="text-slate-300 mb-3">Tùy trạng thái, nút Seed sẽ hiển thị khác nhau:</p>
+              <p className="text-slate-300 mb-3">Tuỳ trạng thái, nút Seed sẽ hiển thị khác nhau:</p>
               <FeatureTable
                 headers={['Trạng thái', 'Text hiển thị']}
                 rows={[
-                  { cells: ['Chưa cấu hình API', '"Configure API in Settings"'] },
-                  { cells: ['Chưa đăng nhập', '"Login to Seed Data"'] },
-                  { cells: ['Đã đăng nhập', '"Seed X Records (Batch/Sequential/Concurrent)"'], highlight: true },
+                  { cells: ['Chưa cấu hình API', '"Cần cấu hình API trước — vào Settings"'] },
+                  { cells: ['Chưa đăng nhập', '"Login để bắt đầu Seed"'] },
+                  { cells: ['Đã đăng nhập', '"Seed X record (Batch/Sequential/Concurrent)"'], highlight: true },
                 ]}
               />
             </SubStep>
@@ -320,11 +334,11 @@ export default function GetStartedPage() {
               <ul className="space-y-2 text-slate-300">
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
-                  Hiển thị progress: <code className="bg-slate-800 px-2 py-0.5 rounded text-blue-400">Seeding X/Y...</code>
+                  Hiển thị tiến độ: <code className="bg-slate-800 px-2 py-0.5 rounded text-blue-400">Đang Seed X/Y record...</code>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-400">•</span>
-                  Progress bar cho thấy tiến độ
+                  Thanh tiến độ cho thấy phần trăm hoàn thành
                 </li>
               </ul>
             </SubStep>
@@ -355,30 +369,30 @@ export default function GetStartedPage() {
 
           <div className="grid gap-4">
             <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6">
-              <h3 className="text-lg font-semibold text-white mb-3">1. Chọn Mode Fake Data</h3>
+              <h3 className="text-lg font-semibold text-white mb-3">1. Cách tạo dữ liệu cho từng trường</h3>
               <FeatureTable
-                headers={['Mode', 'Mô tả']}
+                headers={['Chế độ', 'Mô tả']}
                 rows={[
-                  { cells: ['Auto', 'Fake random cho mỗi record khi seed. Đối với các field ID reference đến bảng khác, sẽ random đến các ID có sẵn'] },
-                  { cells: ['Fixed', 'Nếu không muốn 1 field nào đó fake, có thể nhập manual, apply cho toàn bộ data sẽ seed'] },
-                  { cells: ['NULL', 'Field NULL cho tất cả record khi seed. Lưu ý: Required field không thể chọn NULL'] },
+                  { cells: ['Auto', 'Tự tạo ngẫu nhiên cho mỗi record khi Seed. Với các trường ID tham chiếu bảng khác, sẽ random trong các ID có sẵn'] },
+                  { cells: ['Fixed', 'Nếu không muốn một trường nào đó tự tạo, bạn có thể nhập giá trị cố định, áp dụng cho toàn bộ dữ liệu sẽ Seed'] },
+                  { cells: ['NULL', 'Trường này sẽ là NULL cho tất cả record khi Seed. Lưu ý: Trường bắt buộc không thể chọn NULL'] },
                 ]}
               />
             </div>
 
             <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6">
-              <h3 className="text-lg font-semibold text-white mb-3">2. Generate Preview</h3>
-              <p className="text-slate-300">Nếu muốn chi tiết hơn, có thể generate preview và sửa manual từng field của mỗi record.</p>
+              <h3 className="text-lg font-semibold text-white mb-3">2. Preview dữ liệu</h3>
+              <p className="text-slate-300">Nếu muốn kiểm tra kỹ trước khi Seed, bạn có thể tạo Preview và chỉnh sửa từng ô của từng record. Bảng Preview tự cập nhật khi bạn thay đổi cấu hình trường.</p>
             </div>
 
             <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6">
-              <h3 className="text-lg font-semibold text-white mb-3">3. Chọn Mode Request</h3>
+              <h3 className="text-lg font-semibold text-white mb-3">3. Cách gửi dữ liệu</h3>
               <FeatureTable
-                headers={['Mode', 'Mô tả']}
+                headers={['Chế độ', 'Mô tả']}
                 rows={[
-                  { cells: ['Batch', 'Gửi số lượng lớn record'] },
-                  { cells: ['Sequential', 'Seed 1 record. Backend sẽ dùng cấu trúc dữ liệu dạng queue để buffer data lại, sau đó insert vào database khi đủ số lượng hoặc hết thời gian chờ'] },
-                  { cells: ['Concurrent', 'Giả lập số lượng lớn sequential request gọi đồng thời'] },
+                  { cells: ['Batch', 'Gửi số lượng lớn record trong một request'] },
+                  { cells: ['Sequential', 'Seed từng record một. Backend dùng queue để buffer lại, sau đó insert vào database khi đủ số lượng hoặc hết thời gian chờ'] },
+                  { cells: ['Concurrent', 'Giả lập nhiều request gửi đồng thời (tải stress test)'] },
                 ]}
               />
             </div>
@@ -391,7 +405,7 @@ export default function GetStartedPage() {
             <span className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
               <span className="text-amber-400 text-xl">⚠️</span>
             </span>
-            Known Issues
+            Vấn đề đã biết
           </h2>
 
           <div className="space-y-3">
@@ -416,7 +430,7 @@ export default function GetStartedPage() {
             <span className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
               <span className="text-purple-400 text-xl">🔧</span>
             </span>
-            Technical Notes
+            Ghi chú kỹ thuật
           </h2>
 
           <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-6 space-y-4">

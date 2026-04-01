@@ -24,7 +24,7 @@ function CallbackContent() {
       }
 
       if (!code || !state) {
-        setError('Missing authorization code or state');
+        setError('Thiếu mã xác thực hoặc trạng thái từ máy chủ');
         setLoading(false);
         return;
       }
@@ -34,10 +34,10 @@ function CallbackContent() {
         if (success) {
           router.replace('/');
         } else {
-          setError('Failed to exchange authorization code for tokens');
+          setError('Không thể đổi mã xác thực lấy token');
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Authentication failed');
+        setError(err instanceof Error ? err.message : 'Đăng nhập thất bại');
       }
 
       setLoading(false);
@@ -51,8 +51,8 @@ function CallbackContent() {
       {loading ? (
         <>
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Processing Authentication</h2>
-          <p className="text-gray-600">Please wait while we complete the sign-in process...</p>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Đang xử lý đăng nhập</h2>
+          <p className="text-gray-600">Vui lòng chờ trong giây lát...</p>
         </>
       ) : error ? (
         <>
@@ -61,13 +61,13 @@ function CallbackContent() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Failed</h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Đăng nhập thất bại</h2>
           <p className="text-red-600 mb-6">{error}</p>
           <button
             onClick={() => router.replace('/')}
             className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
-            Return to Home
+            Quay về trang chủ
           </button>
         </>
       ) : (
@@ -77,8 +77,8 @@ function CallbackContent() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Authentication Successful</h2>
-          <p className="text-gray-600">Redirecting...</p>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Đăng nhập thành công</h2>
+          <p className="text-gray-600">Đang chuyển hướng...</p>
         </>
       )}
     </div>
@@ -89,8 +89,8 @@ function LoadingFallback() {
   return (
     <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-      <h2 className="text-xl font-semibold text-gray-900 mb-2">Loading...</h2>
-      <p className="text-gray-600">Please wait...</p>
+      <h2 className="text-xl font-semibold text-gray-900 mb-2">Đang tải...</h2>
+      <p className="text-gray-600">Vui lòng chờ...</p>
     </div>
   );
 }
