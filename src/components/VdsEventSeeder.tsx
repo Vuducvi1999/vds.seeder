@@ -24,11 +24,11 @@ const SOURCE_TYPE_LABELS = new Map<number, string>([
   [3, 'Third Party'],
 ]);
 
+const IMAGE_CONTEXT_TYPE = 'VDSEventData';
+
 const VDS_EVENT_FIELDS: FieldConfig[] = [
   { name: 'eventTypeId', label: 'Event Type ID', type: 'uuid', required: false },
   { name: 'sourceType', label: 'Source Type', type: 'enum', enumValues: Object.values(VDSEventSourceType).filter((v): v is number => typeof v === 'number'), enumLabels: SOURCE_TYPE_LABELS, required: true },
-  { name: 'vdsDeviceId', label: 'VDS Device ID', type: 'uuid', required: true },
-  { name: 'nodeId', label: 'Node ID', type: 'uuid', required: true },
   { name: 'laneCode', label: 'Lane Code', type: 'string', required: true },
   { name: 'zoneCode', label: 'Zone Code', type: 'string', required: false },
   { name: 'sourceReferenceId', label: 'Source Reference ID', type: 'uuid', required: true },
@@ -38,6 +38,7 @@ const VDS_EVENT_FIELDS: FieldConfig[] = [
 
 type FieldMode = 'auto' | 'manual' | 'disabled';
 type SeedMode = 'batch' | 'sequential' | 'concurrent';
+type AuthorizedApiResult = { success: boolean; error?: string };
 
 interface FieldSetting {
   mode: FieldMode;
@@ -62,6 +63,7 @@ export default function VdsEventSeeder() {
   const [isInitialized, setIsInitialized] = useState(false);
   const [resultTimer, setResultTimer] = useState<{ start: number; duration: number } | null>(null);
   const [progressPercent, setProgressPercent] = useState(100);
+  const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (resultTimer) {
@@ -135,6 +137,36 @@ export default function VdsEventSeeder() {
     setUser(null);
   };
 
+  const handleExpiredSession = () => {
+    showResult(false, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+    setIsAuthenticated(false);
+    setUser(null);
+    handleLogin();
+  };
+
+  const resetLoadingState = () => {
+    setIsLoading(false);
+    setProgress(null);
+    setLoadingMessage(null);
+  };
+
+  const runAuthorizedRequest = useCallback(async <T extends AuthorizedApiResult,>(request: () => Promise<T>): Promise<T> => {
+    let response = await request();
+
+    if (response.success || response.error !== '401') {
+      return response;
+    }
+
+    const refreshed = await pkceAuthService.refreshAccessToken();
+    if (!refreshed) {
+      return response;
+    }
+
+    apiService.setToken(pkceAuthService.getAccessToken() || '');
+    response = await request();
+    return response;
+  }, []);
+
   const updateFieldSetting = (fieldName: string, setting: Partial<FieldSetting>) => {
     const field = VDS_EVENT_FIELDS.find(f => f.name === fieldName);
     if (field?.required && setting.mode === 'disabled') return;
@@ -200,6 +232,95 @@ export default function VdsEventSeeder() {
     });
   };
 
+  const prepareZoneCodesForSeed = useCallback(async (data: VDSEventData[]) => {
+    if (fieldSettings.zoneCode?.mode !== 'auto') {
+      return { success: true } as const;
+    }
+
+    const recordsToUpdate = data.filter((item) => !item.zoneCode?.trim());
+    if (recordsToUpdate.length === 0) {
+      return { success: true } as const;
+    }
+
+    setLoadingMessage('Đang lấy Zone Code từ Master Data...');
+    const zoneResult = await runAuthorizedRequest(() => apiService.getZoneCodes());
+    if (!zoneResult.success) {
+      return { success: false, error: zoneResult.error || 'Không thể lấy danh sách Zone Code' } as const;
+    }
+
+    const zoneCodes = [...new Set((zoneResult.zoneCodes ?? []).map((code) => code.trim()).filter(Boolean))];
+    if (zoneCodes.length === 0) {
+      return { success: false, error: 'Master Data chưa có Zone Code khả dụng để Auto' } as const;
+    }
+
+    for (const item of recordsToUpdate) {
+      item.zoneCode = zoneCodes[Math.floor(Math.random() * zoneCodes.length)];
+    }
+
+    return { success: true } as const;
+  }, [fieldSettings.zoneCode?.mode, runAuthorizedRequest]);
+
+  const prepareImagesForSeed = useCallback(async (data: VDSEventData[]) => {
+    if (fieldSettings.imageUrl?.mode !== 'auto') {
+      return { success: true } as const;
+    }
+
+    const recordsToUpdate = data
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => !item.imageUrl?.trim());
+
+    if (recordsToUpdate.length === 0) {
+      return { success: true } as const;
+    }
+
+    for (let i = 0; i < recordsToUpdate.length; i++) {
+      const record = recordsToUpdate[i];
+      setLoadingMessage(`Đang chuẩn bị Image URL cho record ${i + 1}/${recordsToUpdate.length}...`);
+
+      const imageResult = await apiService.getRandomPicsumImage();
+      if (!imageResult.success || !imageResult.imageUrl || !imageResult.base64Image) {
+        return {
+          success: false,
+          error: `Không thể lấy ảnh random cho record ${record.index + 1}: ${imageResult.error || 'Ảnh trả về không hợp lệ'}`,
+        } as const;
+      }
+
+      const saveImageResult = await runAuthorizedRequest(() =>
+        apiService.saveBase64Image(imageResult.base64Image!, IMAGE_CONTEXT_TYPE)
+      );
+
+      if (!saveImageResult.success) {
+        return {
+          success: false,
+          error: saveImageResult.error === '401'
+            ? '401'
+            : `Không thể lưu ảnh vào server cho record ${record.index + 1}: ${saveImageResult.error || 'Lỗi không xác định'}`,
+        } as const;
+      }
+
+      record.item.imageUrl = imageResult.imageUrl;
+    }
+
+    return { success: true } as const;
+  }, [fieldSettings.imageUrl?.mode, runAuthorizedRequest]);
+
+  const prepareDataForSeed = useCallback(async (data: VDSEventData[]) => {
+    const preparedData = data.map((item) => ({ ...item }));
+
+    const zoneResult = await prepareZoneCodesForSeed(preparedData);
+    if (!zoneResult.success) {
+      return { success: false, error: zoneResult.error } as const;
+    }
+
+    const imageResult = await prepareImagesForSeed(preparedData);
+    if (!imageResult.success) {
+      return { success: false, error: imageResult.error } as const;
+    }
+
+    setLoadingMessage(null);
+    return { success: true, data: preparedData } as const;
+  }, [prepareImagesForSeed, prepareZoneCodesForSeed]);
+
   const handleSeed = async (dataToSeed?: VDSEventData[]) => {
     const config = pkceAuthService.getConfig();
     if (!config) {
@@ -220,6 +341,7 @@ export default function VdsEventSeeder() {
 
     setIsLoading(true);
     setProgress(seedMode !== 'batch' ? { current: 0, total: data.length } : null);
+    setLoadingMessage(null);
     const startTime = Date.now();
 
     const token = pkceAuthService.getAccessToken();
@@ -232,44 +354,43 @@ export default function VdsEventSeeder() {
       const applyBufferSetting = () =>
         apiService.changeBufferingChannelSetting(sequentialBatchSize, sequentialWaitSeconds);
 
-      let bufferResult = await applyBufferSetting();
-
+      const bufferResult = await runAuthorizedRequest(applyBufferSetting);
       if (!bufferResult.success) {
         if (bufferResult.error === '401') {
-          const refreshed = await pkceAuthService.refreshAccessToken();
-          if (refreshed) {
-            apiService.setToken(pkceAuthService.getAccessToken() || '');
-            bufferResult = await applyBufferSetting();
-          }
+          handleExpiredSession();
+        } else {
+          showResult(false, `Không thể cập nhật cấu hình buffer: ${bufferResult.error}`);
         }
-        if (!bufferResult.success) {
-          if (bufferResult.error === '401') {
-            showResult(false, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-            setIsAuthenticated(false);
-            setUser(null);
-            handleLogin();
-          } else {
-            showResult(false, `Không thể cập nhật cấu hình buffer: ${bufferResult.error}`);
-          }
-          setIsLoading(false);
-          setProgress(null);
-          return;
-        }
+        resetLoadingState();
+        return;
       }
     }
+
+    const preparedResult = await prepareDataForSeed(data);
+    if (!preparedResult.success || !preparedResult.data) {
+      if (preparedResult.error === '401') {
+        handleExpiredSession();
+      } else {
+        showResult(false, `Không thể chuẩn bị dữ liệu trước khi Seed: ${preparedResult.error}`);
+      }
+      resetLoadingState();
+      return;
+    }
+
+    const preparedData = preparedResult.data;
 
     const seedWithProgress = async (): Promise<{ success: boolean; count: number; error?: string }> => {
       switch (seedMode) {
         case 'sequential':
-          return apiService.seedVdsEventDataSequential(data, (current, total) => {
+          return apiService.seedVdsEventDataSequential(preparedData, (current, total) => {
             setProgress({ current, total });
           });
         case 'concurrent':
-          return apiService.seedVdsEventDataConcurrent(data, concurrentCount, (current, total) => {
+          return apiService.seedVdsEventDataConcurrent(preparedData, concurrentCount, (current, total) => {
             setProgress({ current, total });
           });
         default:
-          return apiService.seedVdsEventData(data);
+          return apiService.seedVdsEventData(preparedData);
       }
     };
 
@@ -289,40 +410,33 @@ export default function VdsEventSeeder() {
           const retryResponse = await seedWithProgress();
           if (retryResponse.success) {
             const message = retryResponse.error 
-              ? `Đã Seed ${retryResponse.count}/${data.length} record trong ${formatDuration(duration)} (${retryResponse.error})`
+              ? `Đã Seed ${retryResponse.count}/${preparedData.length} record trong ${formatDuration(duration)} (${retryResponse.error})`
               : `Seed thành công ${retryResponse.count} record trong ${formatDuration(duration)}`;
             showResult(true, message);
-            setIsLoading(false);
-            setProgress(null);
+            resetLoadingState();
             return;
           }
         }
-        showResult(false, 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
-        setIsAuthenticated(false);
-        setUser(null);
-        handleLogin();
-        setIsLoading(false);
-        setProgress(null);
+        handleExpiredSession();
+        resetLoadingState();
         return;
       }
       showResult(false, `Seed thất bại: ${response.error}`);
-      setIsLoading(false);
-      setProgress(null);
+      resetLoadingState();
       return;
     }
 
     const message = response.error 
-      ? `Đã Seed ${response.count}/${data.length} record trong ${formatDuration(duration)} (${response.error})`
+      ? `Đã Seed ${response.count}/${preparedData.length} record trong ${formatDuration(duration)} (${response.error})`
       : `Seed thành công ${response.count} record trong ${formatDuration(duration)}`;
     showResult(true, message);
     setPreviewData([]);
     setEditMode(false);
-    setIsLoading(false);
-    setProgress(null);
+    resetLoadingState();
   };
 
   const handleSeedDirect = async () => {
-    const data = generateData();
+    const data = editMode && previewData.length > 0 ? previewData : generateData();
     await handleSeed(data);
   };
 
@@ -339,14 +453,6 @@ export default function VdsEventSeeder() {
       </div>
     );
   }
-
-  const getModeColor = (mode: FieldMode) => {
-    switch (mode) {
-      case 'auto': return 'bg-blue-500';
-      case 'manual': return 'bg-emerald-500';
-      case 'disabled': return 'bg-slate-500';
-    }
-  };
 
   return (
     <>
@@ -597,6 +703,9 @@ export default function VdsEventSeeder() {
               {/* Field Cards */}
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Cách tạo dữ liệu cho từng trường</label>
+                <p className="text-xs text-slate-500 mb-2">
+                  Zone Code = Auto sẽ lấy danh sách zone từ Master Data ở lúc Seed. Image URL = Auto sẽ lấy ảnh random, lưu ảnh vào server, rồi tự điền URL vào record. Preview không gọi API ảnh thật.
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {VDS_EVENT_FIELDS.map((field) => {
                     const setting = fieldSettings[field.name] || { mode: 'auto', manualValue: '' };
@@ -807,7 +916,7 @@ export default function VdsEventSeeder() {
                 {isLoading ? (
                   <>
                     <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>
-                    {progress ? `Đang Seed ${progress.current}/${progress.total} record...` : 'Đang Seed...'}
+                    {loadingMessage ?? (progress ? `Đang Seed ${progress.current}/${progress.total} record...` : 'Đang Seed...')}
                   </>
                 ) : !pkceAuthService.getConfig() ? (
                   'Cần cấu hình API trước — vào Settings'

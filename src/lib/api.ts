@@ -6,6 +6,18 @@ export interface ApiConfig {
   token?: string;
 }
 
+interface PicsumImageResponse {
+  imageUrl: string;
+  base64Image: string;
+}
+
+interface ZoneListResponse {
+  items?: Array<{
+    code?: string | null;
+    isActive?: boolean;
+  }>;
+}
+
 class ApiService {
   private config: ApiConfig = {
     baseUrl: '',
@@ -172,6 +184,102 @@ class ApiService {
         return { success: false, error: error.message };
       }
       const message = error instanceof Error ? error.message : 'Không thể cập nhật cấu hình buffer';
+      return { success: false, error: message };
+    }
+  }
+
+  async getRandomPicsumImage(): Promise<{ success: boolean; imageUrl?: string; base64Image?: string; error?: string }> {
+    try {
+      const response = await axios.get<PicsumImageResponse>('/api/picsum-image');
+
+      return {
+        success: true,
+        imageUrl: response.data.imageUrl,
+        base64Image: response.data.base64Image,
+      };
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        const message =
+          typeof error.response?.data?.error === 'string'
+            ? error.response.data.error
+            : error.message;
+
+        return { success: false, error: message };
+      }
+
+      const message = error instanceof Error ? error.message : 'Không thể lấy ảnh random';
+      return { success: false, error: message };
+    }
+  }
+
+  async saveBase64Image(base64Image: string, contextType: string): Promise<{ success: boolean; error?: string }> {
+    if (!this.config.baseUrl) {
+      return { success: false, error: 'Chưa cấu hình API URL' };
+    }
+
+    try {
+      await axios.post(
+        `${this.config.baseUrl}/api/itd/resource-service/base64Image/save-image`,
+        {
+          base64Image,
+          contextType,
+        },
+        {
+          headers: this.getHeaders(),
+        }
+      );
+
+      return { success: true };
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          return { success: false, error: '401' };
+        }
+
+        return { success: false, error: error.message };
+      }
+
+      const message = error instanceof Error ? error.message : 'Không thể lưu ảnh vào server';
+      return { success: false, error: message };
+    }
+  }
+
+  async getZoneCodes(): Promise<{ success: boolean; zoneCodes?: string[]; error?: string }> {
+    if (!this.config.baseUrl) {
+      return { success: false, error: 'Chưa cấu hình API URL' };
+    }
+
+    try {
+      const response = await axios.get<ZoneListResponse>(
+        `${this.config.baseUrl}/api/itd/master/zone`,
+        {
+          headers: this.getHeaders(),
+          params: {
+            MaxResultCount: 1000,
+            SkipCount: 0,
+          },
+        }
+      );
+
+      const items = Array.isArray(response.data.items) ? response.data.items : [];
+      const activeCodes = items
+        .filter((item) => item.isActive !== false && item.code)
+        .map((item) => item.code as string);
+      const zoneCodes = activeCodes.length > 0
+        ? activeCodes
+        : items.filter((item) => item.code).map((item) => item.code as string);
+
+      return { success: true, zoneCodes };
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          return { success: false, error: '401' };
+        }
+
+        return { success: false, error: error.message };
+      }
+
+      const message = error instanceof Error ? error.message : 'Không thể lấy danh sách zone';
       return { success: false, error: message };
     }
   }

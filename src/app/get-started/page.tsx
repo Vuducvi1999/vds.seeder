@@ -284,7 +284,8 @@ export default function GetStartedPage() {
                 <ul className="space-y-1 text-slate-300 text-sm">
                   <li>• <strong>Event Type ID:</strong> Auto (UUID ngẫu nhiên) hoặc NULL</li>
                   <li>• <strong>Source Type:</strong> Fixed = <code className="bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">1</code> (Camera)</li>
-                  <li>• <strong>Image URL:</strong> NULL nếu không cần</li>
+                  <li>• <strong>Zone Code:</strong> Auto để hệ thống tự lấy danh sách zone từ Master Data khi Seed</li>
+                  <li>• <strong>Image URL:</strong> Auto để hệ thống tự lấy ảnh random, lưu ảnh vào server, rồi điền URL ảnh vào record</li>
                 </ul>
               </div>
             </SubStep>
@@ -293,6 +294,9 @@ export default function GetStartedPage() {
           <Step number="5" title="Tạo Preview">
             <SubStep title="5.1 Tạo dữ liệu Preview">
               <p className="text-slate-300 mb-3">Nhấn <strong className="text-blue-400">Tạo Preview</strong> để xem trước dữ liệu trước khi Seed. Bảng Preview tự động cập nhật mỗi khi bạn thay đổi cấu hình trường.</p>
+              <InfoBox type="info">
+                Với <strong>Zone Code = Auto</strong> và <strong>Image URL = Auto</strong>, Preview chỉ hiển thị dữ liệu tạm. Hệ thống chỉ gọi API Master Data và API ảnh thật ngay lúc bạn bấm Seed.
+              </InfoBox>
             </SubStep>
 
             <SubStep title="5.2 Xem và chỉnh sửa">
@@ -373,7 +377,7 @@ export default function GetStartedPage() {
               <FeatureTable
                 headers={['Chế độ', 'Mô tả']}
                 rows={[
-                  { cells: ['Auto', 'Tự tạo ngẫu nhiên cho mỗi record khi Seed. Với các trường ID tham chiếu bảng khác, sẽ random trong các ID có sẵn'] },
+                  { cells: ['Auto', 'Tự tạo ngẫu nhiên cho mỗi record khi Seed. Riêng Zone Code sẽ lấy từ Master Data, còn Image URL sẽ lấy ảnh random và lưu ảnh vào server trước khi gửi record'] },
                   { cells: ['Fixed', 'Nếu không muốn một trường nào đó tự tạo, bạn có thể nhập giá trị cố định, áp dụng cho toàn bộ dữ liệu sẽ Seed'] },
                   { cells: ['NULL', 'Trường này sẽ là NULL cho tất cả record khi Seed. Lưu ý: Trường bắt buộc không thể chọn NULL'] },
                 ]}
