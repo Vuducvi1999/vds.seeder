@@ -215,12 +215,14 @@ export default function GetStartedPage() {
           <Step number="3" title="Chọn loại dữ liệu cần Seed">
             <p className="text-slate-400 mb-4">Từ trang chủ, chọn loại dữ liệu muốn Seed.</p>
             
-            <FeatureTable
-              headers={['Loại dữ liệu', 'Mô tả']}
-              rows={[
-                { cells: ['VDS Event', 'Dữ liệu sự kiện từ hệ thống phát hiện phương tiện (VDS)'], highlight: true },
-              ]}
-            />
+              <FeatureTable
+                headers={['Loại dữ liệu', 'Mô tả']}
+                rows={[
+                  { cells: ['VDS Event', 'Dữ liệu sự kiện từ hệ thống phát hiện phương tiện (VDS)'], highlight: true },
+                  { cells: ['VDS Traffic', 'Dữ liệu traffic tổng hợp theo khoảng thời gian từ hệ thống VDS'] },
+                  { cells: ['VDS Vehicle', 'Dữ liệu phương tiện nhận diện từ hệ thống VDS'] },
+                ]}
+              />
 
             <p className="text-slate-300">Nhấn vào card của loại dữ liệu cần Seed → Hệ thống sẽ chuyển sang trang Seed tương ứng</p>
           </Step>
@@ -231,8 +233,8 @@ export default function GetStartedPage() {
                 headers={['Chế độ', 'Mô tả']}
                 rows={[
                   { cells: ['Batch', 'Gửi tất cả record trong 1 request'], highlight: true },
-                  { cells: ['Sequential', 'Gửi từng record một (endpoint /sequence)'] },
-                  { cells: ['Concurrent', 'Gửi nhiều request đồng thời (endpoint /sequence)'] },
+                  { cells: ['Sequential', 'Gửi từng record một (endpoint /sequence). Dùng chung buffer backend với Concurrent.'] },
+                  { cells: ['Concurrent', 'Gửi nhiều request đồng thời (endpoint /sequence). Dùng chung buffer backend với Sequential.'] },
                 ]}
               />
             </SubStep>
@@ -250,8 +252,8 @@ export default function GetStartedPage() {
               </ul>
             </SubStep>
 
-            <SubStep title="4.3 Cấu hình buffer backend (chế độ Sequential)">
-              <p className="text-slate-300 mb-3">Khi chọn <strong>Sequential</strong>, một panel cấu hình buffer backend sẽ hiện ra. Các giá trị này được gửi lên backend trước khi bắt đầu Seed:</p>
+            <SubStep title="4.3 Cấu hình buffer backend dùng chung (Sequential + Concurrent)">
+              <p className="text-slate-300 mb-3">Khi chọn <strong>Sequential</strong> hoặc <strong>Concurrent</strong>, một panel cấu hình buffer backend dùng chung sẽ hiện ra. Hai chế độ này cùng đi qua một buffer backend, nên đổi ở đây sẽ áp dụng cho cả hai. Các giá trị này được gửi lên backend trước khi bắt đầu Seed:</p>
               <FeatureTable
                 headers={['Trường', 'Mặc định', 'Ý nghĩa']}
                 rows={[
@@ -396,8 +398,8 @@ export default function GetStartedPage() {
                 headers={['Chế độ', 'Mô tả']}
                 rows={[
                   { cells: ['Batch', 'Gửi số lượng lớn record trong một request'] },
-                  { cells: ['Sequential', 'Seed từng record một. Backend dùng queue để buffer lại, sau đó insert vào database khi đủ số lượng hoặc hết thời gian chờ'] },
-                  { cells: ['Concurrent', 'Giả lập nhiều request gửi đồng thời (tải stress test)'] },
+                  { cells: ['Sequential', 'Seed từng record một. Backend dùng queue để buffer lại, sau đó insert vào database khi đủ số lượng hoặc hết thời gian chờ. Dùng chung buffer backend với Concurrent.'] },
+                  { cells: ['Concurrent', 'Giả lập nhiều request gửi đồng thời (tải stress test). Dùng chung buffer backend với Sequential.'] },
                 ]}
               />
             </div>
@@ -457,10 +459,10 @@ export default function GetStartedPage() {
         {/* CTA */}
         <section className="text-center py-8">
           <Link
-            href="/seed/vds-event"
+            href="/"
             className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-semibold text-lg hover:from-blue-400 hover:to-blue-500 transition-all shadow-lg shadow-blue-500/30"
           >
-            <span>Bắt đầu Seed Data</span>
+            <span>Vào màn hình chọn resource</span>
             <span>→</span>
           </Link>
         </section>

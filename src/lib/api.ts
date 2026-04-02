@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { VDSEventData } from '@/types/vds-event';
+import { SeedResult } from '@/types/seeder';
 
 export interface ApiConfig {
   baseUrl: string;
@@ -40,23 +40,27 @@ class ApiService {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
+
     if (this.config.token) {
-      headers['Authorization'] = `Bearer ${this.config.token}`;
+      headers.Authorization = `Bearer ${this.config.token}`;
     }
+
     return headers;
   }
 
-  async seedVdsEventData(data: VDSEventData[]): Promise<{ success: boolean; count: number; error?: string }> {
+  private noConfigSeedResult(): SeedResult {
+    return { success: false, count: 0, error: 'Chưa cấu hình API URL' };
+  }
+
+  async seedBatch<T extends object>(route: string, data: T[]): Promise<SeedResult> {
     if (!this.config.baseUrl) {
-      return { success: false, count: 0, error: 'Chưa cấu hình API URL' };
+      return this.noConfigSeedResult();
     }
 
     try {
-      const response = await axios.post(
-        `${this.config.baseUrl}/api/itd/vds/v-dSEvent-data/list`,
-        data,
-        { headers: this.getHeaders() }
-      );
+      await axios.post(`${this.config.baseUrl}${route}`, data, {
+        headers: this.getHeaders(),
+      });
 
       return { success: true, count: data.length };
     } catch (error: unknown) {
@@ -64,19 +68,22 @@ class ApiService {
         if (error.response?.status === 401) {
           return { success: false, count: 0, error: 'Không có quyền truy cập — vui lòng đăng nhập lại' };
         }
+
         return { success: false, count: 0, error: error.message };
       }
+
       const message = error instanceof Error ? error.message : 'Không thể kết nối tới API';
       return { success: false, count: 0, error: message };
     }
   }
 
-  async seedVdsEventDataSequential(
-    data: VDSEventData[],
+  async seedSequential<T extends object>(
+    route: string,
+    data: T[],
     onProgress?: (current: number, total: number) => void
-  ): Promise<{ success: boolean; count: number; error?: string }> {
+  ): Promise<SeedResult> {
     if (!this.config.baseUrl) {
-      return { success: false, count: 0, error: 'Chưa cấu hình API URL' };
+      return this.noConfigSeedResult();
     }
 
     let successCount = 0;
@@ -84,22 +91,22 @@ class ApiService {
 
     for (let i = 0; i < data.length; i++) {
       try {
-        await axios.post(
-          `${this.config.baseUrl}/api/itd/vds/v-dSEvent-data/sequence`,
-          data[i],
-          { headers: this.getHeaders() }
-        );
+        await axios.post(`${this.config.baseUrl}${route}`, data[i], {
+          headers: this.getHeaders(),
+        });
         successCount++;
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
           if (error.response?.status === 401) {
             return { success: false, count: successCount, error: 'Không có quyền truy cập — vui lòng đăng nhập lại' };
           }
+
           lastError = error.message;
         } else {
           lastError = error instanceof Error ? error.message : 'Không thể Seed record này';
         }
       }
+
       onProgress?.(i + 1, data.length);
     }
 
@@ -107,16 +114,21 @@ class ApiService {
       return { success: false, count: 0, error: lastError || 'Tất cả record đều thất bại' };
     }
 
-    return { success: true, count: successCount, error: successCount < data.length ? `Một phần: ${successCount}/${data.length} record thành công` : undefined };
+    return {
+      success: true,
+      count: successCount,
+      error: successCount < data.length ? `Một phần: ${successCount}/${data.length} record thành công` : undefined,
+    };
   }
 
-  async seedVdsEventDataConcurrent(
-    data: VDSEventData[],
+  async seedConcurrent<T extends object>(
+    route: string,
+    data: T[],
     concurrency: number,
     onProgress?: (current: number, total: number) => void
-  ): Promise<{ success: boolean; count: number; error?: string }> {
+  ): Promise<SeedResult> {
     if (!this.config.baseUrl) {
-      return { success: false, count: 0, error: 'Chưa cấu hình API URL' };
+      return this.noConfigSeedResult();
     }
 
     let successCount = 0;
@@ -124,13 +136,11 @@ class ApiService {
     const total = data.length;
     const errors: string[] = [];
 
-    const seedOne = async (item: VDSEventData): Promise<void> => {
+    const seedOne = async (item: T) => {
       try {
-        await axios.post(
-          `${this.config.baseUrl}/api/itd/vds/v-dSEvent-data/sequence`,
-          item,
-          { headers: this.getHeaders() }
-        );
+        await axios.post(`${this.config.baseUrl}${route}`, item, {
+          headers: this.getHeaders(),
+        });
         successCount++;
       } catch (error: unknown) {
         if (axios.isAxiosError(error)) {
@@ -144,7 +154,6 @@ class ApiService {
       }
     };
 
-    // Process in batches of concurrency
     for (let i = 0; i < data.length; i += concurrency) {
       const batch = data.slice(i, i + concurrency);
       await Promise.all(batch.map(seedOne));
@@ -154,10 +163,10 @@ class ApiService {
       return { success: false, count: 0, error: errors[0] || 'Tất cả record đều thất bại' };
     }
 
-    return { 
-      success: true, 
-      count: successCount, 
-      error: successCount < total ? `Một phần: ${successCount}/${total} record thành công` : undefined 
+    return {
+      success: true,
+      count: successCount,
+      error: successCount < total ? `Một phần: ${successCount}/${total} record thành công` : undefined,
     };
   }
 
@@ -167,28 +176,30 @@ class ApiService {
     }
 
     try {
-      await axios.post(
-        `${this.config.baseUrl}/api/itd/vds/buffering-channel/change-setting`,
-        null,
-        {
-          headers: this.getHeaders(),
-          params: { batchSize, seconds },
-        }
-      );
+      await axios.post(`${this.config.baseUrl}/api/itd/vds/buffering-channel/change-setting`, null, {
+        headers: this.getHeaders(),
+        params: { batchSize, seconds },
+      });
+
       return { success: true };
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
           return { success: false, error: '401' };
         }
+
         return { success: false, error: error.message };
       }
+
       const message = error instanceof Error ? error.message : 'Không thể cập nhật cấu hình buffer';
       return { success: false, error: message };
     }
   }
 
-  async saveBase64Image(base64Image: string, imageType: number): Promise<{ success: boolean; imageUrl?: string; content?: string; error?: string }> {
+  async saveBase64Image(
+    base64Image: string,
+    imageType: number
+  ): Promise<{ success: boolean; imageUrl?: string; content?: string; error?: string }> {
     if (!this.config.baseUrl) {
       return { success: false, error: 'Chưa cấu hình API URL' };
     }
@@ -205,8 +216,8 @@ class ApiService {
         }
       );
 
-      const imageUrl = response.data.imageUrl ?? (response.data as unknown as { ImageUrl?: string }).ImageUrl;
-      const content = response.data.content ?? (response.data as unknown as { Content?: string }).Content;
+      const imageUrl = response.data.imageUrl ?? (response.data as { ImageUrl?: string }).ImageUrl;
+      const content = response.data.content ?? (response.data as { Content?: string }).Content;
 
       if (!imageUrl) {
         return { success: false, error: 'API lưu ảnh không trả về ImageUrl' };
@@ -233,16 +244,13 @@ class ApiService {
     }
 
     try {
-      const response = await axios.get<ZoneListResponse>(
-        `${this.config.baseUrl}/api/itd/master/zone`,
-        {
-          headers: this.getHeaders(),
-          params: {
-            MaxResultCount: 1000,
-            SkipCount: 0,
-          },
-        }
-      );
+      const response = await axios.get<ZoneListResponse>(`${this.config.baseUrl}/api/itd/master/zone`, {
+        headers: this.getHeaders(),
+        params: {
+          MaxResultCount: 1000,
+          SkipCount: 0,
+        },
+      });
 
       const items = Array.isArray(response.data.items) ? response.data.items : [];
       const activeCodes = items
@@ -277,16 +285,15 @@ class ApiService {
         headers: this.getHeaders(),
         timeout: 5000,
       });
+
       return { success: true, message: 'Kết nối thành công' };
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          return { success: true, message: 'Kết nối thành công' };
-        }
-        if (error.response?.status === 405) {
+        if (error.response?.status === 401 || error.response?.status === 405) {
           return { success: true, message: 'Kết nối thành công' };
         }
       }
+
       const message = error instanceof Error ? error.message : 'Kết nối thất bại';
       return { success: false, message };
     }
