@@ -6,6 +6,7 @@ import { VDSEventSourceType, VDSEventData } from '@/types/vds-event';
 import { apiService } from '@/lib/api';
 import { pkceAuthService } from '@/lib/auth-pkce';
 import { generateBatchData } from '@/lib/faker';
+import { getRandomImageBase64Sample, isBase64ImageValue, normalizeBase64ImageValue } from '@/lib/image-base64-samples';
 import Settings from '@/components/Settings';
 
 interface FieldConfig {
@@ -24,7 +25,7 @@ const SOURCE_TYPE_LABELS = new Map<number, string>([
   [3, 'Third Party'],
 ]);
 
-const IMAGE_CONTEXT_TYPE = 'VDSEventData';
+const IMAGE_TYPE_VDS_EVENT_DATA = 0;
 
 const VDS_EVENT_FIELDS: FieldConfig[] = [
   { name: 'eventTypeId', label: 'Event Type ID', type: 'uuid', required: false },
@@ -260,14 +261,59 @@ export default function VdsEventSeeder() {
     return { success: true } as const;
   }, [fieldSettings.zoneCode?.mode, runAuthorizedRequest]);
 
+  const saveImageToServer = useCallback(async (base64Image: string) => {
+    const saveImageResult = await runAuthorizedRequest(() =>
+      apiService.saveBase64Image(base64Image, IMAGE_TYPE_VDS_EVENT_DATA)
+    );
+
+    if (!saveImageResult.success) {
+      return { success: false, error: saveImageResult.error || 'Không thể lưu ảnh vào server' } as const;
+    }
+
+    if (!saveImageResult.imageUrl) {
+      return { success: false, error: 'API lưu ảnh không trả về ImageUrl' } as const;
+    }
+
+    return { success: true, imageUrl: saveImageResult.imageUrl } as const;
+  }, [runAuthorizedRequest]);
+
   const prepareImagesForSeed = useCallback(async (data: VDSEventData[]) => {
-    if (fieldSettings.imageUrl?.mode !== 'auto') {
+    const imageMode = fieldSettings.imageUrl?.mode;
+
+    if (imageMode === 'manual') {
+      const manualValue = fieldSettings.imageUrl?.manualValue?.trim() ?? '';
+      if (!manualValue || !isBase64ImageValue(manualValue)) {
+        return { success: true } as const;
+      }
+
+      setLoadingMessage('Đang lưu Image URL Fixed vào server...');
+      const saveImageResult = await saveImageToServer(normalizeBase64ImageValue(manualValue));
+      if (!saveImageResult.success) {
+        return {
+          success: false,
+          error: saveImageResult.error === '401'
+            ? '401'
+            : `Không thể lưu Image URL Fixed vào server: ${saveImageResult.error || 'Lỗi không xác định'}`,
+        } as const;
+      }
+
+      for (const item of data) {
+        item.imageUrl = saveImageResult.imageUrl;
+      }
+
+      return { success: true } as const;
+    }
+
+    if (imageMode !== 'auto') {
       return { success: true } as const;
     }
 
     const recordsToUpdate = data
       .map((item, index) => ({ item, index }))
-      .filter(({ item }) => !item.imageUrl?.trim());
+      .filter(({ item }) => {
+        const currentValue = item.imageUrl?.trim();
+        return !currentValue || isBase64ImageValue(currentValue);
+      });
 
     if (recordsToUpdate.length === 0) {
       return { success: true } as const;
@@ -277,18 +323,11 @@ export default function VdsEventSeeder() {
       const record = recordsToUpdate[i];
       setLoadingMessage(`Đang chuẩn bị Image URL cho record ${i + 1}/${recordsToUpdate.length}...`);
 
-      const imageResult = await apiService.getRandomPicsumImage();
-      if (!imageResult.success || !imageResult.imageUrl || !imageResult.base64Image) {
-        return {
-          success: false,
-          error: `Không thể lấy ảnh random cho record ${record.index + 1}: ${imageResult.error || 'Ảnh trả về không hợp lệ'}`,
-        } as const;
-      }
+      const base64Image = record.item.imageUrl?.trim()
+        ? normalizeBase64ImageValue(record.item.imageUrl)
+        : getRandomImageBase64Sample();
 
-      const saveImageResult = await runAuthorizedRequest(() =>
-        apiService.saveBase64Image(imageResult.base64Image!, IMAGE_CONTEXT_TYPE)
-      );
-
+      const saveImageResult = await saveImageToServer(base64Image);
       if (!saveImageResult.success) {
         return {
           success: false,
@@ -298,11 +337,11 @@ export default function VdsEventSeeder() {
         } as const;
       }
 
-      record.item.imageUrl = imageResult.imageUrl;
+      record.item.imageUrl = saveImageResult.imageUrl;
     }
 
     return { success: true } as const;
-  }, [fieldSettings.imageUrl?.mode, runAuthorizedRequest]);
+  }, [fieldSettings.imageUrl?.manualValue, fieldSettings.imageUrl?.mode, saveImageToServer]);
 
   const prepareDataForSeed = useCallback(async (data: VDSEventData[]) => {
     const preparedData = data.map((item) => ({ ...item }));
@@ -704,7 +743,7 @@ export default function VdsEventSeeder() {
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Cách tạo dữ liệu cho từng trường</label>
                 <p className="text-xs text-slate-500 mb-2">
-                  Zone Code = Auto sẽ lấy danh sách zone từ Master Data ở lúc Seed. Image URL = Auto sẽ lấy ảnh random, lưu ảnh vào server, rồi tự điền URL vào record. Preview không gọi API ảnh thật.
+                  Zone Code = Auto sẽ lấy danh sách zone từ Master Data ở lúc Seed. Image URL = Auto sẽ random từ ảnh mẫu nội bộ rồi lưu vào server. Image URL = Fixed nếu nhập base64 thì cũng sẽ lưu ảnh vào server, còn URL thường thì dùng trực tiếp.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {VDS_EVENT_FIELDS.map((field) => {

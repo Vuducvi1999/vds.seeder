@@ -6,9 +6,9 @@ export interface ApiConfig {
   token?: string;
 }
 
-interface PicsumImageResponse {
-  imageUrl: string;
-  base64Image: string;
+interface SaveBase64ImageResponse {
+  content?: string;
+  imageUrl?: string;
 }
 
 interface ZoneListResponse {
@@ -188,48 +188,31 @@ class ApiService {
     }
   }
 
-  async getRandomPicsumImage(): Promise<{ success: boolean; imageUrl?: string; base64Image?: string; error?: string }> {
-    try {
-      const response = await axios.get<PicsumImageResponse>('/api/picsum-image');
-
-      return {
-        success: true,
-        imageUrl: response.data.imageUrl,
-        base64Image: response.data.base64Image,
-      };
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        const message =
-          typeof error.response?.data?.error === 'string'
-            ? error.response.data.error
-            : error.message;
-
-        return { success: false, error: message };
-      }
-
-      const message = error instanceof Error ? error.message : 'Không thể lấy ảnh random';
-      return { success: false, error: message };
-    }
-  }
-
-  async saveBase64Image(base64Image: string, contextType: string): Promise<{ success: boolean; error?: string }> {
+  async saveBase64Image(base64Image: string, imageType: number): Promise<{ success: boolean; imageUrl?: string; content?: string; error?: string }> {
     if (!this.config.baseUrl) {
       return { success: false, error: 'Chưa cấu hình API URL' };
     }
 
     try {
-      await axios.post(
+      const response = await axios.post<SaveBase64ImageResponse>(
         `${this.config.baseUrl}/api/itd/resource-service/base64Image/save-image`,
         {
           base64Image,
-          contextType,
+          imageType,
         },
         {
           headers: this.getHeaders(),
         }
       );
 
-      return { success: true };
+      const imageUrl = response.data.imageUrl ?? (response.data as unknown as { ImageUrl?: string }).ImageUrl;
+      const content = response.data.content ?? (response.data as unknown as { Content?: string }).Content;
+
+      if (!imageUrl) {
+        return { success: false, error: 'API lưu ảnh không trả về ImageUrl' };
+      }
+
+      return { success: true, imageUrl, content };
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 401) {
