@@ -80,7 +80,7 @@ export const VDS_EVENT_RESOURCE: VdsResourceConfig<VDSEventData> = {
     { name: 'confidence', label: 'Confidence', type: 'number', required: false },
   ],
   fieldHelpText:
-    'Zone Code = Auto sẽ lấy danh sách zone từ Master Data ở lúc Seed. Image URL = Auto sẽ random từ ảnh mẫu nội bộ rồi lưu vào server. Image URL = Fixed nếu nhập base64 thì cũng sẽ lưu ảnh vào server, còn URL thường thì dùng trực tiếp.',
+    'Zone Code = Auto sẽ lấy danh sách zone từ Master Data ở lúc Seed. Image URL = Auto sẽ random từ ảnh mẫu nội bộ rồi lưu vào server. Image URL = Fixed nếu nhập base64 thì cũng sẽ lưu ảnh vào server.',
   sampleNotes: [
     'Event Type ID: Auto hoặc NULL',
     'Source Type: Fixed = Camera',
@@ -164,14 +164,14 @@ export const VDS_VEHICLE_RESOURCE: VdsResourceConfig<VDSVehicleData> = {
       required: false,
     },
     { name: 'imageUrl', label: 'Image URL', type: 'string', required: false },
-    { name: 'isImputed', label: 'Is Imputed', type: 'boolean', required: false },
-    { name: 'isBookmark', label: 'Is Bookmark', type: 'boolean', required: false },
+    { name: 'isImputed', label: 'Is Imputed', type: 'boolean', required: false, disallowNull: true },
+    { name: 'isBookmark', label: 'Is Bookmark', type: 'boolean', required: false, disallowNull: true },
     { name: 'confidenceColor', label: 'Confidence Color', type: 'number', required: false },
     { name: 'confidenceSpeed', label: 'Confidence Speed', type: 'number', required: false },
     { name: 'confidenceDirection', label: 'Confidence Direction', type: 'number', required: false },
   ],
   fieldHelpText:
-    'Zone Code = Auto sẽ lấy danh sách zone từ Master Data ở lúc Seed. Image URL = Auto sẽ random từ ảnh mẫu nội bộ rồi lưu vào server với context VDSVehicle. Image URL = Fixed nếu nhập base64 thì cũng sẽ lưu ảnh vào server, còn URL thường thì dùng trực tiếp.',
+    'Zone Code = Auto sẽ lấy danh sách zone từ Master Data ở lúc Seed. Image URL = Auto sẽ random từ ảnh mẫu nội bộ rồi lưu vào server với context VDSVehicle. Image URL = Fixed nếu nhập base64 thì cũng sẽ lưu ảnh vào server.',
   sampleNotes: [
     'Plate: Auto để mỗi record có biển số khác nhau',
     'Vehicle Class: Auto hoặc Fixed theo loại xe bạn muốn test',

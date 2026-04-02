@@ -39,6 +39,8 @@ export default function VdsResourceSeeder<T extends object>({ config }: Props<T>
   const [resultTimer, setResultTimer] = useState<{ start: number; duration: number } | null>(null);
   const [progressPercent, setProgressPercent] = useState(100);
   const [loadingMessage, setLoadingMessage] = useState<string | null>(null);
+  const [zoneCodeOptions, setZoneCodeOptions] = useState<string[]>([]);
+  const [isLoadingZoneCodeOptions, setIsLoadingZoneCodeOptions] = useState(false);
 
   useEffect(() => {
     if (!resultTimer) {
@@ -71,12 +73,13 @@ export default function VdsResourceSeeder<T extends object>({ config }: Props<T>
   const loadConfig = useCallback(() => {
     const authConfig = pkceAuthService.getConfig();
     const authState = pkceAuthService.getAuthState();
+    const token = pkceAuthService.getAccessToken() || '';
 
     setIsAuthenticated(authState.isAuthenticated);
     setUser(authState.user);
 
     if (authConfig) {
-      apiService.setConfig({ baseUrl: authConfig.backendApiUrl });
+      apiService.setConfig({ baseUrl: authConfig.backendApiUrl, token });
     }
 
     if (authState.isAuthenticated && authConfig) {
@@ -233,6 +236,30 @@ export default function VdsResourceSeeder<T extends object>({ config }: Props<T>
 
   const hasZoneCodeField = config.fields.some((field) => field.name === 'zoneCode');
   const hasImageField = config.fields.some((field) => field.name === 'imageUrl');
+
+  const loadZoneCodeOptions = useCallback(async () => {
+    if (!hasZoneCodeField || !isAuthenticated) {
+      setZoneCodeOptions([]);
+      return;
+    }
+
+    setIsLoadingZoneCodeOptions(true);
+    const result = await runAuthorizedRequest(() => apiService.getZoneCodes());
+
+    if (!result.success) {
+      setZoneCodeOptions([]);
+      setIsLoadingZoneCodeOptions(false);
+      return;
+    }
+
+    const zoneCodes = [...new Set((result.zoneCodes ?? []).map((item) => item.trim()).filter(Boolean))];
+    setZoneCodeOptions(zoneCodes);
+    setIsLoadingZoneCodeOptions(false);
+  }, [hasZoneCodeField, isAuthenticated, runAuthorizedRequest]);
+
+  useEffect(() => {
+    void loadZoneCodeOptions();
+  }, [loadZoneCodeOptions]);
 
   const prepareZoneCodesForSeed = useCallback(async (data: T[]) => {
     if (!hasZoneCodeField || fieldSettings.zoneCode?.mode !== 'auto') {
@@ -497,6 +524,76 @@ export default function VdsResourceSeeder<T extends object>({ config }: Props<T>
     }
 
     return String(value);
+  };
+
+  const renderManualFieldInput = (field: FieldConfig<T>, setting: FieldSetting) => {
+    if (field.name === 'zoneCode') {
+      const isDisabled = !isAuthenticated || isLoadingZoneCodeOptions || zoneCodeOptions.length === 0;
+      const placeholder = !isAuthenticated
+        ? 'Login để tải Zone Code...'
+        : isLoadingZoneCodeOptions
+          ? 'Đang tải Zone Code...'
+          : zoneCodeOptions.length === 0
+            ? 'Không có Zone Code để chọn'
+            : 'Chọn Zone Code...';
+
+      return (
+        <select
+          value={setting.manualValue}
+          onChange={(event) => updateFieldSetting(field.name, { manualValue: event.target.value })}
+          disabled={isDisabled}
+          className="w-full px-2 py-1 bg-slate-900/50 border border-slate-600/50 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 mt-1 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          <option value="">{placeholder}</option>
+          {zoneCodeOptions.map((zoneCode) => (
+            <option key={zoneCode} value={zoneCode}>
+              {zoneCode}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    if (field.type === 'enum') {
+      return (
+        <select
+          value={setting.manualValue}
+          onChange={(event) => updateFieldSetting(field.name, { manualValue: event.target.value })}
+          className="w-full px-2 py-1 bg-slate-900/50 border border-slate-600/50 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 mt-1"
+        >
+          <option value="">Chọn {field.label}...</option>
+          {field.enumValues?.map((value) => (
+            <option key={value} value={value}>
+              {field.enumLabels?.get(value) || value}
+            </option>
+          ))}
+        </select>
+      );
+    }
+
+    if (field.type === 'boolean') {
+      return (
+        <select
+          value={setting.manualValue}
+          onChange={(event) => updateFieldSetting(field.name, { manualValue: event.target.value })}
+          className="w-full px-2 py-1 bg-slate-900/50 border border-slate-600/50 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 mt-1"
+        >
+          <option value="">Chọn {field.label}...</option>
+          <option value="true">true</option>
+          <option value="false">false</option>
+        </select>
+      );
+    }
+
+    return (
+      <input
+        type={field.type === 'number' ? 'number' : 'text'}
+        value={setting.manualValue}
+        onChange={(event) => updateFieldSetting(field.name, { manualValue: event.target.value })}
+        placeholder="Nhập giá trị..."
+        className="w-full px-2 py-1 bg-slate-900/50 border border-slate-600/50 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 mt-1"
+      />
+    );
   };
 
   if (!isInitialized) {
@@ -783,40 +880,7 @@ export default function VdsResourceSeeder<T extends object>({ config }: Props<T>
                         </div>
                       </div>
 
-                      {setting.mode === 'manual' && (
-                        field.type === 'enum' ? (
-                          <select
-                            value={setting.manualValue}
-                            onChange={(event) => updateFieldSetting(field.name, { manualValue: event.target.value })}
-                            className="w-full px-2 py-1 bg-slate-900/50 border border-slate-600/50 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 mt-1"
-                          >
-                            <option value="">Chọn {field.label}...</option>
-                            {field.enumValues?.map((value) => (
-                              <option key={value} value={value}>
-                                {field.enumLabels?.get(value) || value}
-                              </option>
-                            ))}
-                          </select>
-                        ) : field.type === 'boolean' ? (
-                          <select
-                            value={setting.manualValue}
-                            onChange={(event) => updateFieldSetting(field.name, { manualValue: event.target.value })}
-                            className="w-full px-2 py-1 bg-slate-900/50 border border-slate-600/50 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 mt-1"
-                          >
-                            <option value="">Chọn {field.label}...</option>
-                            <option value="true">true</option>
-                            <option value="false">false</option>
-                          </select>
-                        ) : (
-                          <input
-                            type={field.type === 'number' ? 'number' : 'text'}
-                            value={setting.manualValue}
-                            onChange={(event) => updateFieldSetting(field.name, { manualValue: event.target.value })}
-                            placeholder="Nhập giá trị..."
-                            className="w-full px-2 py-1 bg-slate-900/50 border border-slate-600/50 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 mt-1"
-                          />
-                        )
-                      )}
+                      {setting.mode === 'manual' && renderManualFieldInput(field, setting)}
                     </div>
                   );
                 })}

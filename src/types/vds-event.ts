@@ -8,7 +8,7 @@ export enum VDSEventSourceType {
 export interface VDSEventData {
   eventTypeId?: string | null;
   laneCode: string;
-  zoneCode?: string;
+  zoneCode?: string | null;
   sourceType: VDSEventSourceType;
   sourceReferenceId: string;
   imageUrl?: string | null;

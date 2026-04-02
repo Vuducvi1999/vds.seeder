@@ -7,7 +7,7 @@ export enum TrafficIntervalType {
 
 export interface VDSTrafficData {
   laneCode: string;
-  zoneCode?: string;
+  zoneCode?: string | null;
   occurDate: string;
   intervalType: TrafficIntervalType;
   numVehicles: number;
@@ -17,4 +17,3 @@ export interface VDSTrafficData {
   avgHeadway?: number | null;
   confidence?: number | null;
 }
-

@@ -172,6 +172,7 @@ export function generateVdsVehicleData(
         break;
       case 'vehicleClass':
         data.vehicleClass = faker.helpers.arrayElement([
+          VDSVehicleClass.Unknown,
           VDSVehicleClass.Car,
           VDSVehicleClass.Truck,
           VDSVehicleClass.Bus,

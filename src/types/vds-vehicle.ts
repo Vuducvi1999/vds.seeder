@@ -12,7 +12,7 @@ export enum VDSVehicleDirection {
 }
 
 export interface VDSVehicleData {
-  zoneCode?: string;
+  zoneCode?: string | null;
   laneCode: string;
   occurDate: string;
   sourceReferenceId: string;
