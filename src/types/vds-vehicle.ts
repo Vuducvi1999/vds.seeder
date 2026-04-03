@@ -14,9 +14,10 @@ export enum VDSVehicleDirection {
 export interface VDSVehicleData {
   zoneCode?: string | null;
   laneCode: string;
-  occurDate: string;
+  occurDate?: string;
   sourceReferenceId: string;
   plate: string;
+  base64Image?: string | null;
   vehicleClass?: VDSVehicleClass | null;
   speed?: number | null;
   confidence?: number | null;

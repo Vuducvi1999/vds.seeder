@@ -6,11 +6,6 @@ export interface ApiConfig {
   token?: string;
 }
 
-interface SaveBase64ImageResponse {
-  content?: string;
-  imageUrl?: string;
-}
-
 interface ZoneListResponse {
   items?: Array<{
     code?: string | null;
@@ -192,48 +187,6 @@ class ApiService {
       }
 
       const message = error instanceof Error ? error.message : 'Không thể cập nhật cấu hình buffer';
-      return { success: false, error: message };
-    }
-  }
-
-  async saveBase64Image(
-    base64Image: string,
-    imageType: number
-  ): Promise<{ success: boolean; imageUrl?: string; content?: string; error?: string }> {
-    if (!this.config.baseUrl) {
-      return { success: false, error: 'Chưa cấu hình API URL' };
-    }
-
-    try {
-      const response = await axios.post<SaveBase64ImageResponse>(
-        `${this.config.baseUrl}/api/itd/resource-service/base64Image/save-image`,
-        {
-          base64Image,
-          imageType,
-        },
-        {
-          headers: this.getHeaders(),
-        }
-      );
-
-      const imageUrl = response.data.imageUrl ?? (response.data as { ImageUrl?: string }).ImageUrl;
-      const content = response.data.content ?? (response.data as { Content?: string }).Content;
-
-      if (!imageUrl) {
-        return { success: false, error: 'API lưu ảnh không trả về ImageUrl' };
-      }
-
-      return { success: true, imageUrl, content };
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          return { success: false, error: '401' };
-        }
-
-        return { success: false, error: error.message };
-      }
-
-      const message = error instanceof Error ? error.message : 'Không thể lưu ảnh vào server';
       return { success: false, error: message };
     }
   }

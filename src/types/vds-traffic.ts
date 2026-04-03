@@ -15,5 +15,7 @@ export interface VDSTrafficData {
   occupancy: number;
   avgDensity?: number | null;
   avgHeadway?: number | null;
+  base64Image?: string | null;
   confidence?: number | null;
+  imageUrl?: string | null;
 }

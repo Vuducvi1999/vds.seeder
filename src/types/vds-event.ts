@@ -11,6 +11,7 @@ export interface VDSEventData {
   zoneCode?: string | null;
   sourceType: VDSEventSourceType;
   sourceReferenceId: string;
+  base64Image?: string | null;
   imageUrl?: string | null;
   confidence?: number | null;
 }

@@ -13,7 +13,6 @@ export interface VdsResourceConfig<T extends object> {
   id: string;
   name: string;
   description: string;
-  imageType?: number;
   fields: FieldConfig<T>[];
   fieldHelpText: string;
   sampleNotes?: string[];
@@ -62,7 +61,6 @@ export const VDS_EVENT_RESOURCE: VdsResourceConfig<VDSEventData> = {
   id: 'vds-event',
   name: 'VDS Event',
   description: 'Dữ liệu sự kiện từ hệ thống phát hiện phương tiện (VDS)',
-  imageType: 0,
   fields: [
     { name: 'eventTypeId', label: 'Event Type ID', type: 'uuid', required: false },
     {
@@ -80,12 +78,12 @@ export const VDS_EVENT_RESOURCE: VdsResourceConfig<VDSEventData> = {
     { name: 'confidence', label: 'Confidence', type: 'number', required: false },
   ],
   fieldHelpText:
-    'Zone Code = Auto sẽ lấy danh sách zone từ Master Data ở lúc Seed. Image URL = Auto sẽ random từ ảnh mẫu nội bộ rồi lưu vào server. Image URL = Fixed nếu nhập base64 thì cũng sẽ lưu ảnh vào server.',
+    'Zone Code = Auto sẽ lấy danh sách zone từ database. Image URL = Auto sẽ random ảnh mẫu nội bộ rồi gửi base64 ngay trong request VDS để backend tự lưu ảnh. Image URL = Fixed nếu nhập base64 thì cũng sẽ gửi thẳng base64 trong request VDS.',
   sampleNotes: [
     'Event Type ID: Auto hoặc NULL',
     'Source Type: Fixed = Camera',
     'Zone Code: Auto để lấy từ Master Data khi Seed',
-    'Image URL: Auto để hệ thống tự tạo ảnh và lưu vào server',
+    'Image URL: Auto để hệ thống tự tạo ảnh base64 và gửi trong request VDS',
   ],
   generateBatchData: generateVdsEventBatchData,
   seedBatch: (data) => apiService.seedBatch('/api/itd/vds/v-dSEvent-data/list', data),
@@ -101,7 +99,6 @@ export const VDS_TRAFFIC_RESOURCE: VdsResourceConfig<VDSTrafficData> = {
   fields: [
     { name: 'laneCode', label: 'Lane Code', type: 'string', required: true },
     { name: 'zoneCode', label: 'Zone Code', type: 'string', required: false, disallowNull: true },
-    { name: 'occurDate', label: 'Occur Date', type: 'string', required: true },
     {
       name: 'intervalType',
       label: 'Interval Type',
@@ -116,13 +113,15 @@ export const VDS_TRAFFIC_RESOURCE: VdsResourceConfig<VDSTrafficData> = {
     { name: 'avgDensity', label: 'Avg Density', type: 'number', required: false },
     { name: 'avgHeadway', label: 'Avg Headway', type: 'number', required: false },
     { name: 'confidence', label: 'Confidence', type: 'number', required: false },
+    { name: 'imageUrl', label: 'Image URL', type: 'string', required: false },
   ],
   fieldHelpText:
-    'Zone Code = Auto sẽ lấy danh sách zone từ Master Data ở lúc Seed. Các field số liệu traffic như Num Vehicles, Avg Speed, Occupancy có thể để Auto để mỗi record tự đổi.',
+    'Zone Code = Auto sẽ lấy danh sách zone từ database. Các field số liệu traffic như Num Vehicles, Avg Speed, Occupancy có thể để Auto để mỗi record tự đổi. Image URL = Auto sẽ random ảnh mẫu nội bộ rồi gửi base64 ngay trong request VDS để backend tự lưu ảnh. Image URL = Fixed nếu nhập base64 thì cũng sẽ gửi thẳng base64 trong request VDS.',
   sampleNotes: [
     'Occur Date: Auto để hệ thống tự lấy thời gian gần hiện tại',
     'Interval Type: Fixed = OneMinute nếu muốn dữ liệu đồng nhất',
-    'Zone Code: Auto để lấy từ Master Data khi Seed',
+    'Zone Code: Auto để lấy từ database khi Seed',
+    'Image URL: Auto để hệ thống tự tạo ảnh base64 và gửi trong request VDS',
   ],
   generateBatchData: generateVdsTrafficBatchData,
   seedBatch: (data) => apiService.seedBatch('/api/itd/vds/v-dSTraffic/list', data),
@@ -135,11 +134,9 @@ export const VDS_VEHICLE_RESOURCE: VdsResourceConfig<VDSVehicleData> = {
   id: 'vds-vehicle',
   name: 'VDS Vehicle',
   description: 'Dữ liệu phương tiện nhận diện từ hệ thống VDS',
-  imageType: 1,
   fields: [
     { name: 'zoneCode', label: 'Zone Code', type: 'string', required: false, disallowNull: true },
     { name: 'laneCode', label: 'Lane Code', type: 'string', required: true },
-    { name: 'occurDate', label: 'Occur Date', type: 'string', required: true },
     { name: 'sourceReferenceId', label: 'Source Reference ID', type: 'uuid', required: true },
     { name: 'plate', label: 'Plate', type: 'string', required: true },
     {
@@ -171,11 +168,12 @@ export const VDS_VEHICLE_RESOURCE: VdsResourceConfig<VDSVehicleData> = {
     { name: 'confidenceDirection', label: 'Confidence Direction', type: 'number', required: false },
   ],
   fieldHelpText:
-    'Zone Code = Auto sẽ lấy danh sách zone từ Master Data ở lúc Seed. Image URL = Auto sẽ random từ ảnh mẫu nội bộ rồi lưu vào server với context VDSVehicle. Image URL = Fixed nếu nhập base64 thì cũng sẽ lưu ảnh vào server.',
+    'Zone Code = Auto sẽ lấy danh sách zone từ database. Image URL = Auto sẽ random ảnh mẫu nội bộ rồi gửi base64 ngay trong request VDS để backend tự lưu ảnh. Image URL = Fixed nếu nhập base64 thì cũng sẽ gửi thẳng base64 trong request VDS.',
   sampleNotes: [
     'Plate: Auto để mỗi record có biển số khác nhau',
     'Vehicle Class: Auto hoặc Fixed theo loại xe bạn muốn test',
-    'Image URL: Auto để hệ thống tự tạo ảnh và lưu vào server',
+    'Occur Date: backend tự tạo khi create',
+    'Image URL: Auto để hệ thống tự tạo ảnh base64 và gửi trong request VDS',
   ],
   generateBatchData: generateVdsVehicleBatchData,
   seedBatch: (data) => apiService.seedBatch('/api/itd/vds/v-dSVehicle/list', data),

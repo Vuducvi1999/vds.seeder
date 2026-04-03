@@ -4,7 +4,7 @@ export type SeedRecord = Record<string, SeedValue>;
 export interface FieldConfig<T extends object> {
   name: keyof T & string;
   label: string;
-  type: 'enum' | 'string' | 'number' | 'uuid' | 'boolean';
+  type: 'enum' | 'string' | 'number' | 'uuid' | 'boolean' | 'datetime';
   enumValues?: Array<string | number>;
   enumLabels?: Map<string | number, string>;
   required: boolean;

@@ -287,8 +287,8 @@ export default function GetStartedPage() {
                   <li>• <strong>Event Type ID:</strong> Auto (UUID ngẫu nhiên) hoặc NULL</li>
                   <li>• <strong>Source Type:</strong> Fixed = <code className="bg-slate-800 px-1.5 py-0.5 rounded text-emerald-400">1</code> (Camera)</li>
                   <li>• <strong>Zone Code:</strong> Auto để hệ thống tự lấy danh sách zone từ Master Data khi Seed</li>
-                  <li>• <strong>Image URL:</strong> Auto để hệ thống random từ ảnh mẫu nội bộ, lưu ảnh vào server, rồi điền URL ảnh vào record</li>
-                  <li>• <strong>Image URL:</strong> Fixed nếu nhập base64 thì hệ thống cũng sẽ lưu ảnh vào server trước khi Seed</li>
+                  <li>• <strong>Image URL:</strong> Auto để hệ thống random ảnh mẫu nội bộ, gắn base64 vào request VDS, rồi backend tự lưu ảnh</li>
+                  <li>• <strong>Image URL:</strong> Fixed nếu nhập base64 thì hệ thống sẽ gửi thẳng base64 trong request VDS</li>
                 </ul>
               </div>
             </SubStep>
@@ -298,7 +298,7 @@ export default function GetStartedPage() {
             <SubStep title="5.1 Tạo dữ liệu Preview">
               <p className="text-slate-300 mb-3">Nhấn <strong className="text-blue-400">Tạo Preview</strong> để xem trước dữ liệu trước khi Seed. Bảng Preview tự động cập nhật mỗi khi bạn thay đổi cấu hình trường.</p>
               <InfoBox type="info">
-                Với <strong>Zone Code = Auto</strong> và <strong>Image URL = Auto</strong>, Preview chỉ hiển thị dữ liệu tạm. Hệ thống chỉ gọi API Master Data và API lưu ảnh ngay lúc bạn bấm Seed.
+                Với <strong>Zone Code = Auto</strong> và <strong>Image URL = Auto</strong>, Preview chỉ hiển thị dữ liệu tạm. Hệ thống chỉ gọi API Master Data và chuẩn bị base64 ảnh ngay lúc bạn bấm Seed.
               </InfoBox>
             </SubStep>
 
@@ -380,8 +380,8 @@ export default function GetStartedPage() {
               <FeatureTable
                 headers={['Chế độ', 'Mô tả']}
                 rows={[
-                  { cells: ['Auto', 'Tự tạo ngẫu nhiên cho mỗi record khi Seed. Riêng Zone Code sẽ lấy từ Master Data, còn Image URL sẽ random từ ảnh mẫu nội bộ và lưu ảnh vào server trước khi gửi record'] },
-                  { cells: ['Fixed', 'Nếu không muốn một trường nào đó tự tạo, bạn có thể nhập giá trị cố định. Riêng Image URL nếu nhập base64 thì hệ thống sẽ lưu ảnh vào server trước, còn URL thường sẽ dùng trực tiếp'] },
+                  { cells: ['Auto', 'Tự tạo ngẫu nhiên cho mỗi record khi Seed. Riêng Zone Code sẽ lấy từ Master Data, còn Image URL sẽ random ảnh mẫu nội bộ rồi gắn base64 trực tiếp vào request VDS để backend tự lưu ảnh'] },
+                  { cells: ['Fixed', 'Nếu không muốn một trường nào đó tự tạo, bạn có thể nhập giá trị cố định. Riêng Image URL nếu nhập base64 thì hệ thống sẽ gửi thẳng base64 trong request VDS, còn URL thường sẽ gửi nguyên giá trị bạn nhập'] },
                   { cells: ['NULL', 'Trường này sẽ là NULL cho tất cả record khi Seed. Lưu ý: Trường bắt buộc không thể chọn NULL'] },
                 ]}
               />

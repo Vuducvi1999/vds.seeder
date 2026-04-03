@@ -80,6 +80,7 @@ export function generateVdsTrafficData(
     avgDensity: faker.number.float({ min: 0, max: 80, fractionDigits: 2 }),
     avgHeadway: faker.number.float({ min: 0.5, max: 10, fractionDigits: 2 }),
     confidence: faker.number.float({ min: 0, max: 100, fractionDigits: 2 }),
+    imageUrl: null,
     ...baseData,
   };
 
@@ -133,7 +134,6 @@ export function generateVdsVehicleData(
   const data: VDSVehicleData = {
     zoneCode: null,
     laneCode: `LANE-${faker.string.numeric(2)}`,
-    occurDate: randomIsoDateWithinDays(7),
     sourceReferenceId: faker.string.uuid(),
     plate: randomLicensePlate(),
     vehicleClass: VDSVehicleClass.Car,
@@ -160,9 +160,6 @@ export function generateVdsVehicleData(
     switch (cfg.fieldName) {
       case 'laneCode':
         data.laneCode = `LANE-${faker.string.numeric(2)}`;
-        break;
-      case 'occurDate':
-        data.occurDate = randomIsoDateWithinDays(7);
         break;
       case 'sourceReferenceId':
         data.sourceReferenceId = faker.string.uuid();

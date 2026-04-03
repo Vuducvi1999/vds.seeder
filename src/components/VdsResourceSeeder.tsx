@@ -182,6 +182,10 @@ export default function VdsResourceSeeder<T extends object>({ config }: Props<T>
       return value === 'true';
     }
 
+    if (field.type === 'datetime') {
+      return value ? new Date(value).toISOString() : null;
+    }
+
     return value;
   }, []);
 
@@ -293,48 +297,35 @@ export default function VdsResourceSeeder<T extends object>({ config }: Props<T>
     return { success: true } as const;
   }, [fieldSettings.zoneCode?.mode, hasZoneCodeField, runAuthorizedRequest]);
 
-  const saveImageToServer = useCallback(async (base64Image: string) => {
-    if (config.imageType === undefined) {
-      return { success: false, error: 'Resource này không hỗ trợ lưu ảnh' } as const;
-    }
-
-    const result = await runAuthorizedRequest(() => apiService.saveBase64Image(base64Image, config.imageType!));
-    if (!result.success) {
-      return { success: false, error: result.error || 'Không thể lưu ảnh vào server' } as const;
-    }
-
-    if (!result.imageUrl) {
-      return { success: false, error: 'API lưu ảnh không trả về ImageUrl' } as const;
-    }
-
-    return { success: true, imageUrl: result.imageUrl } as const;
-  }, [config.imageType, runAuthorizedRequest]);
-
   const prepareImagesForSeed = useCallback(async (data: T[]) => {
-    if (!hasImageField || config.imageType === undefined) {
+    if (!hasImageField) {
       return { success: true } as const;
+    }
+
+    for (const item of data) {
+      (item as Record<string, SeedValue>).base64Image = null;
     }
 
     const imageMode = fieldSettings.imageUrl?.mode;
     if (imageMode === 'manual') {
       const manualValue = fieldSettings.imageUrl?.manualValue?.trim() ?? '';
-      if (!manualValue || !isBase64ImageValue(manualValue)) {
-        return { success: true } as const;
-      }
-
-      setLoadingMessage('Đang lưu Image URL Fixed vào server...');
-      const saveResult = await saveImageToServer(normalizeBase64ImageValue(manualValue));
-      if (!saveResult.success) {
-        return {
-          success: false,
-          error: saveResult.error === '401'
-            ? '401'
-            : `Không thể lưu Image URL Fixed vào server: ${saveResult.error || 'Lỗi không xác định'}`,
-        } as const;
-      }
 
       for (const item of data) {
-        (item as Record<string, SeedValue>).imageUrl = saveResult.imageUrl;
+        const target = item as Record<string, SeedValue>;
+        if (!manualValue) {
+          target.imageUrl = null;
+          target.base64Image = null;
+          continue;
+        }
+
+        if (isBase64ImageValue(manualValue)) {
+          target.imageUrl = null;
+          target.base64Image = normalizeBase64ImageValue(manualValue);
+          continue;
+        }
+
+        target.imageUrl = manualValue;
+        target.base64Image = null;
       }
 
       return { success: true } as const;
@@ -361,23 +352,16 @@ export default function VdsResourceSeeder<T extends object>({ config }: Props<T>
 
       const currentValueRaw = (record.item as Record<string, SeedValue>).imageUrl;
       const currentValue = typeof currentValueRaw === 'string' ? currentValueRaw.trim() : '';
-      const base64Image = currentValue ? normalizeBase64ImageValue(currentValue) : getRandomImageBase64Sample();
-      const saveResult = await saveImageToServer(base64Image);
+      const base64Image = currentValue && isBase64ImageValue(currentValue)
+        ? normalizeBase64ImageValue(currentValue)
+        : getRandomImageBase64Sample();
 
-      if (!saveResult.success) {
-        return {
-          success: false,
-          error: saveResult.error === '401'
-            ? '401'
-            : `Không thể lưu ảnh vào server cho record ${record.index + 1}: ${saveResult.error || 'Lỗi không xác định'}`,
-        } as const;
-      }
-
-      (record.item as Record<string, SeedValue>).imageUrl = saveResult.imageUrl;
+      (record.item as Record<string, SeedValue>).imageUrl = null;
+      (record.item as Record<string, SeedValue>).base64Image = base64Image;
     }
 
     return { success: true } as const;
-  }, [config.imageType, fieldSettings.imageUrl?.manualValue, fieldSettings.imageUrl?.mode, hasImageField, saveImageToServer]);
+  }, [fieldSettings.imageUrl?.manualValue, fieldSettings.imageUrl?.mode, hasImageField]);
 
   const prepareDataForSeed = useCallback(async (data: T[]) => {
     const preparedData = data.map((item) => ({ ...item }));
@@ -387,10 +371,7 @@ export default function VdsResourceSeeder<T extends object>({ config }: Props<T>
       return { success: false, error: zoneResult.error } as const;
     }
 
-    const imageResult = await prepareImagesForSeed(preparedData);
-    if (!imageResult.success) {
-      return { success: false, error: imageResult.error } as const;
-    }
+    await prepareImagesForSeed(preparedData);
 
     setLoadingMessage(null);
     return { success: true, data: preparedData } as const;
@@ -582,6 +563,17 @@ export default function VdsResourceSeeder<T extends object>({ config }: Props<T>
           <option value="true">true</option>
           <option value="false">false</option>
         </select>
+      );
+    }
+
+    if (field.type === 'datetime') {
+      return (
+        <input
+          type="datetime-local"
+          value={setting.manualValue}
+          onChange={(event) => updateFieldSetting(field.name, { manualValue: event.target.value })}
+          className="w-full px-2 py-1 bg-slate-900/50 border border-slate-600/50 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 mt-1"
+        />
       );
     }
 
@@ -973,6 +965,13 @@ export default function VdsResourceSeeder<T extends object>({ config }: Props<T>
                                     <option value="true">true</option>
                                     <option value="false">false</option>
                                   </select>
+                                ) : field.type === 'datetime' ? (
+                                  <input
+                                    type="datetime-local"
+                                    value={rawValue == null || rawValue === '' ? '' : (() => { const d = new Date(String(rawValue)); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); })()}
+                                    onChange={(event) => updatePreviewData(rowIndex, field.name, event.target.value)}
+                                    className="w-full px-3 py-2 bg-slate-900 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                  />
                                 ) : (
                                   <input
                                     type={field.type === 'number' ? 'number' : 'text'}
